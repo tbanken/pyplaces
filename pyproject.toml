@@ -1,0 +1,31 @@
+[project]
+authors = [{name = "Ted", email = "tedbanken@gmail.com"}]
+dependencies = []
+name = "pyplaces"
+requires-python = ">=3.9"
+version = "0.1.0"
+dynamic = ["version"]
+description = "Package to easily read places data in remote storage from an OSM place or bounding box."
+readme = "README.md"
+license-files = "LICENSE"
+
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tool.pixi.pypi-dependencies]
+pyplaces = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+
+[tool.pixi.dependencies]
+pyarrow = ">=19.0.1,<20"
+geopandas = ">=1.0.1,<2"
+shapely = ">=2.0.7,<3"
+pyproj = ">=3.7.1,<4"
+numpy = ">=2.2.4,<3"
