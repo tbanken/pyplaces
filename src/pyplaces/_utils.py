@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
-
-
+import sys
+import operator
+import functools
+from typing import Union, List, Tuple, Any, Literal
+from json import loads
+import traceback
 import numpy as np
 from pyproj import Geod
 from shapely import Polygon
@@ -12,20 +16,11 @@ from pyarrow.compute import field
 from pyarrow.dataset import dataset, Expression
 from pyarrow.fs import S3FileSystem
 from geopandas import GeoDataFrame
-import datetime as dt
-import logging as lg
-import os
-import sys
-import unicodedata as ud
-from contextlib import redirect_stdout
-from pathlib import Path
-# from requests import get
-import operator
-import functools
-from typing import Union, List, Tuple, Any, Literal
-from json import loads
-from ._geocoder import geocode, _geocode_query_to_gdf
-from . import settings
+# from ._geocoder import geocode, _geocode_query_to_gdf
+from osmnx.geocoder import geocode, geocode_to_gdf
+from osmnx import settings
+# from . import settings
+from ._errors import S3ReadError
 
 #TODO add releases automation
 #TODO add base types automation and code check
@@ -105,6 +100,9 @@ from . import settings
 
 #     return template.format(dt.datetime.now().astimezone())
 
+settings.http_referer = "pyplaces Python Package" # OSMnx Python package (https://github.com/gboeing/osmnx)
+settings.http_user_agent= "pyplaces"
+
 FieldName = str
 OperatorStr = Literal["==", "!=", "<", "<=", ">", ">=", "is_nan", "is_null", "is_valid", "isin"]
 FilterValue = Union[str, int, float, List[Any], Tuple[Any, ...], None]
@@ -135,8 +133,8 @@ def tuple_to_expression(filter_tuple: FilterTuple) -> Expression:
     field_name, op_str, value = filter_tuple
     pyaro_field = field(field_name)
     
-    # Map operator strings to PyArrow operations
-    if op_str == "==":
+    # Map operator strings to PyArrow operations    
+    if op_str == "==" or op_str == "=":
         return pyaro_field == value
     elif op_str == "!=":
         return pyaro_field != value
@@ -222,38 +220,81 @@ def build_filter_expression(filter_structure: FilterStructure) -> Expression:
     
     return combined_expr
 
-def read_geoparquet_arrow(path: str,region: str,bbox: tuple[float,float,float,float],columns: list[str] | None = None,filters: Expression | None = None) -> GeoDataFrame:
+
+def catch_and_raise_error(func):
+    """
+    Decorator to catch and re-raise errors with full context
     
+    Args:
+        func (callable): Function to wrap
+    
+    Returns:
+        Wrapped function that raises a custom exception
+    """
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as original_error:
+            # Capture the full traceback
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            
+            tb_details = traceback.extract_tb(exc_traceback)
+            error_message = (
+                f"Error in function {func.__name__}:\n"
+                f"Type: {exc_type.__name__}\n"
+                f"Message: {str(original_error)}\n"
+                f"Location: {tb_details[-1].filename}:{tb_details[-1].lineno}"
+            )
+            
+            # Raise a new exception with the detailed error information
+            raise ValueError(error_message) from original_error
+    
+    return wrapper
+
+
+@catch_and_raise_error
+def read_geoparquet_arrow(path: str,region: str,bbox: tuple[float,float,float,float],columns: list[str] | None = None,filters: FilterStructure | None = None) -> GeoDataFrame:
+    filter_expr = None
+    if filters:
+        filter_expr = build_filter_expression(filters)
     def decode_bytes(obj):
         if isinstance(obj, dict):
             return {decode_bytes(k): decode_bytes(v) for k, v in obj.items()}
         elif isinstance(obj, list):
             return [decode_bytes(i) for i in obj]
         elif isinstance(obj, bytes):
-            return obj.decode("utf-8")  # Change encoding if needed
+            return obj.decode("utf-8")
         else:
             return obj
     
     xmin, ymin, xmax, ymax = bbox
     
-    geo_filter = (
+    geo_filter_expr = (
         (field("bbox", "xmin") < xmax)
         & (field("bbox", "xmax") > xmin)
         & (field("bbox", "ymin") < ymax)
         & (field("bbox", "ymax") > ymin)
     )
-    filter_ls = list(filter(lambda x: x is not None, [geo_filter, filters]))
+    filter_ls = list(filter(lambda x: x is not None, [geo_filter_expr, filter_expr]))
     combined_filter = functools.reduce(operator.and_, filter_ls)
     
     clean_path=path.replace("s3://", "")
-    ds = dataset(
+    #wrap this for error unable to read from bucket
+    try:
+        ds = dataset(
         clean_path, filesystem=S3FileSystem(anonymous=True, region=region)
-    )
-    if columns:
-        batches = ds.to_batches(columns=columns,filter=combined_filter)
-    else:
-        batches = ds.to_batches(filter=combined_filter)
-
+        )
+    except Exception as e:
+        raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
+    try:
+        if columns:
+            batches = ds.to_batches(columns=columns,filter=combined_filter)
+        else:
+            batches = ds.to_batches(filter=combined_filter)
+    except ValueError as e:
+        raise e
+    #wrap this for incorrect field for incorrect column in filter or select, or value in filter
+    
     non_empty_batches = (b for b in batches if b.num_rows > 0)
     
     schema = ds.schema
@@ -306,7 +347,7 @@ def geocode_point_to_bbox(address,distance,unit):
     return bbox
 
 def geocode_place_to_bbox(address):
-    gdf = _geocode_query_to_gdf(address,1,False)
+    gdf = geocode_to_gdf(query=address,which_result=1,by_osmid=False)
     row = gdf.iloc[0]
     geometry = row["geometry"]
     bbox = (row["bbox_west"],row["bbox_south"],row["bbox_east"],row["bbox_north"])
@@ -343,136 +384,3 @@ def point_buffer(lon: float, lat: float, radius_m:float) -> Polygon:
                                     radians=False
                             )
     return Polygon(zip(lons, lats))
-
-
-def ts(style: str = "datetime", template: str | None = None) -> str:
-    """
-    Return current local timestamp as a string.
-
-    Parameters
-    ----------
-    style
-        {"datetime", "iso8601", "date", "time"}
-        Format the timestamp with this built-in style.
-    template
-        If not None, format the timestamp with this format string instead of
-        one of the built-in styles.
-
-    Returns
-    -------
-    timestamp
-        The current timestamp.
-    """
-    if template is None:
-        if style == "datetime":
-            template = "{:%Y-%m-%d %H:%M:%S}"
-        elif style == "iso8601":
-            template = "{:%Y-%m-%dT%H:%M:%SZ}"
-        elif style == "date":
-            template = "{:%Y-%m-%d}"
-        elif style == "time":
-            template = "{:%H:%M:%S}"
-        else:  # pragma: no cover
-            msg = f"Invalid timestamp style {style!r}."
-            raise ValueError(msg)
-
-    return template.format(dt.datetime.now().astimezone())
-
-def log(
-    message: str,
-    level: int | None = None,
-    name: str | None = None,
-    filename: str | None = None,
-) -> None:
-    """
-    Write a message to the logger.
-
-    This logs to file and/or prints to the console (terminal), depending on
-    the current configuration of `settings.log_file` and
-    `settings.log_console`.
-
-    Parameters
-    ----------
-    message
-        The message to log.
-    level
-        One of the Python `logger.level` constants. If None, set to
-        `settings.log_level` value.
-    name
-        The name of the logger. If None, set to `settings.log_name` value.
-    filename
-        The name of the log file, without file extension. If None, set to
-        `settings.log_filename` value.
-    """
-    if level is None:
-        level = settings.log_level
-    if name is None:
-        name = settings.log_name
-    if filename is None:
-        filename = settings.log_filename
-
-    # if logging to file is turned on
-    if settings.log_file:
-        # get the current logger (or create a new one, if none), then log
-        # message at requested level
-        logger = _get_logger(name=name, filename=filename)
-        if level == lg.DEBUG:
-            logger.debug(message)
-        elif level == lg.INFO:
-            logger.info(message)
-        elif level == lg.WARNING:
-            logger.warning(message)
-        elif level == lg.ERROR:
-            logger.error(message)
-
-    # if logging to console (terminal window) is turned on
-    if settings.log_console:
-        # prepend timestamp then convert to ASCII for Windows command prompts
-        message = f"{ts()} {message}"
-        message = ud.normalize("NFKD", message).encode("ascii", errors="replace").decode()
-
-        try:
-            # print explicitly to terminal in case Jupyter has captured stdout
-            if getattr(sys.stdout, "_original_stdstream_copy", None) is not None:
-                # redirect the Jupyter-captured pipe back to original
-                os.dup2(sys.stdout._original_stdstream_copy, sys.__stdout__.fileno())  # type: ignore[union-attr]
-                sys.stdout._original_stdstream_copy = None  # type: ignore[union-attr]
-            with redirect_stdout(sys.__stdout__):
-                print(message, file=sys.__stdout__, flush=True)
-        except OSError:
-            # handle pytest on Windows raising OSError from sys.__stdout__
-            print(message, flush=True)  # noqa: T201
-
-
-def _get_logger(name: str, filename: str) -> lg.Logger:
-    """
-    Create a logger or return the current one if already instantiated.
-
-    Parameters
-    ----------
-    name
-        Name of the logger.
-    filename
-        Name of the log file, without file extension.
-
-    Returns
-    -------
-    logger
-        The logger.
-    """
-    logger = lg.getLogger(name)
-
-    # if a logger with this name is not already set up with a handler
-    if len(logger.handlers) == 0:
-        # make log filepath and create parent folder if it doesn't exist
-        filepath = Path(settings.logs_folder) / f"{filename}_{ts(style='date')}.log"
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-
-        # create file handler and log formatter and set them up
-        handler = lg.FileHandler(filepath, encoding="utf-8")
-        handler.setLevel(lg.DEBUG)
-        handler.setFormatter(lg.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
-        logger.addHandler(handler)
-        logger.setLevel(lg.DEBUG)
-
-    return logger

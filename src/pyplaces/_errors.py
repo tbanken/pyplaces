@@ -1,8 +1,5 @@
-# API errors from nominatinum
-# Read errors from s3 buckets (?)
+class S3ReadError(FileNotFoundError):
+    """Exception for empty results when querying an S3 bucket."""
 
-class InsufficientResponseError(ValueError):
-    """Exception for empty or too few results in server response."""
-    
-class ResponseStatusCodeError(ValueError):
-    """Exception for an unhandled server response status code."""
+class PyArrowError(ValueError):
+    """Exception for catching PyArrow errors when invalid parameters are passed."""

@@ -4,10 +4,10 @@ dependencies = []
 name = "pyplaces"
 requires-python = ">=3.9"
 version = "0.1.0"
-dynamic = ["version"]
+dynamic = ["_version.py"]
 description = "Package to easily read places data in remote storage from an OSM place or bounding box."
 readme = "README.md"
-license-files = "LICENSE"
+license-files = ["LICENSE"]
 
 
 [build-system]
@@ -29,3 +29,5 @@ geopandas = ">=1.0.1,<2"
 shapely = ">=2.0.7,<3"
 pyproj = ">=3.7.1,<4"
 numpy = ">=2.2.4,<3"
+pytest = ">=8.3.5,<9"
+osmnx = ">=2.0.2,<3"
