@@ -211,8 +211,6 @@ def build_filter_expression(filter_structure: FilterStructure) -> Expression:
                 or_expr = or_expr | expr  # Use '|' for logical OR
                 
             expressions.append(or_expr)
-        else:
-            raise ValueError(f"Unsupported filter item type: {type(filter_item)}")
     
     # Combine all expressions with AND logic
     combined_expr = expressions[0]
@@ -237,16 +235,8 @@ def catch_and_raise_pyarrow(func):
             return func(*args, **kwargs)
         except Exception as original_error:
             # Capture the full traceback
-            exc_type, exc_value, exc_traceback = sys.exc_info()
+            exc_type= sys.exc_info()[0]
             
-            # tb_details = traceback.extract_tb(exc_traceback)
-            # error_message = (
-            #     f"Error in function {func.__name__}:\n"
-            #     f"Type: {exc_type.__name__}\n"
-            #     f"Message: {str(original_error)}\n"
-            #     f"Location: {tb_details[-1].filename}:{tb_details[-1].lineno}"
-            # )
-            # print(error_message)
             error_message = str(original_error)
             # print(exc_type.__name__)
             if exc_type.__name__ == "UnsupportedOperatorError":
@@ -255,10 +245,12 @@ def catch_and_raise_pyarrow(func):
                 match = re.search(r"FieldRef\.Name\(([^)]+)\)", error_message)
                 name = match.group(1)
                 raise PyArrowError(f"Invalid column name:\"{name}\"") from original_error
-            else:
+            elif exc_type.__name__ =="ArrowNotImplementedError":
                 match = re.search(r"\(([^)]+)\)", error_message)
                 first_value,last_value = match.group(1).split(",")
-                raise ValueError(f"Incorrect type used for value in filter: \"{last_value.strip()}\" should be \"{first_value.strip()}\"") from original_error   
+                raise ValueError(f"Incorrect type used for value in filter: \"{last_value.strip()}\" should be \"{first_value.strip()}\"") from original_error
+            else:
+                raise original_error   
     return wrapper
 
 
@@ -294,13 +286,10 @@ def read_geoparquet_arrow(path: str,region: str,bbox: tuple[float,float,float,fl
         )
     except Exception as e:
         raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
-    try:
-        if columns:
-            batches = ds.to_batches(columns=columns,filter=combined_filter)
-        else:
-            batches = ds.to_batches(filter=combined_filter)
-    except ValueError as e:
-        raise e
+    if columns:
+        batches = ds.to_batches(columns=columns,filter=combined_filter)
+    else:
+        batches = ds.to_batches(filter=combined_filter)
     #wrap this for incorrect field for incorrect column in filter or select, or value in filter
     
     non_empty_batches = (b for b in batches if b.num_rows > 0)
@@ -323,7 +312,7 @@ def read_geoparquet_arrow(path: str,region: str,bbox: tuple[float,float,float,fl
 
     return GeoDataFrame.from_arrow(reader)
 
-
+@catch_and_raise_pyarrow
 def read_parquet_arrow(path: str,region: str,columns: list[str] | None = None,filters: FilterStructure | None = None) -> GeoDataFrame:
     filter_expr = build_filter_expression(filters)
     clean_path=path.replace("s3://", "")
