@@ -14,7 +14,7 @@ OVERTURE_BUILDINGS_PART_PREFIX = "theme=buildings/type=building_part/"
 OVERTURE_ADDRESSES_PREFIX = "theme=addresses/type=address/"
 OVERTURE_TRANSPORTATION_SEGMENT_PREFIX = "theme=transportation/type=segment/"
 OVERTURE_TRANSPORTATION_CONNECTOR_PREFIX = "theme=transportation/type=connector/"
-OVERTURE_BASE_PREFIX = "theme=base/"
+OVERTURE_BASE_PREFIX = "theme=base/type={type}"
 
 
 class overture_maps(pyplaces_datasource):
@@ -80,20 +80,20 @@ class overture_maps(pyplaces_datasource):
         return self.from_bbox(bbox,OVERTURE_PLACES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
     def overture_base_from_address(self,address: str,base_type: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
-        # check_base_type(base_type)
-        complete_prefix = OVERTURE_BASE_PREFIX + f"type={base_type}/"
+        self.check_base_type(base_type)
+        complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
         return self.from_address(address,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
         
 
     def overture_base_from_place(self,address: str,base_type: str,columns: list[str]| None=None,filters: FilterStructure=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
-        # check_base_type(base_type)
-        complete_prefix = OVERTURE_BASE_PREFIX + f"type={base_type}/"
+        self.check_base_type(base_type)
+        complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
         return self.from_place(address,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
         
 
     def overture_base_from_bbox(self,bbox: tuple[float,float,float,float],base_type: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame  :
-        # check_base_type(base_type)
-        complete_prefix = OVERTURE_BASE_PREFIX + f"type={base_type}/"
+        self.check_base_type(base_type)
+        complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
         return self.from_bbox(bbox,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
     
     def check_release(self,release):
@@ -102,10 +102,9 @@ class overture_maps(pyplaces_datasource):
         if release not in folders:
             raise ValueError(f"Invalid release:{release}")
     
-    #TODO wait for base type automation
-    def check_base_type(self,base_type):
-        pass    
-        # with open("releases/overture/base_types.txt", "r",encoding="utf-8-sig") as f:
-        #     folders = [line.strip(" \n/") for line in f]
-        # if base_type not in folders:
-        #     raise ValueError(f"Invalid base type:{base_type}")
+    #TODO no automation
+    def check_base_type(self,base_type):   
+        with open("releases/overture/base_types.txt", "r",encoding="utf-8-sig") as f:
+            folders = [line.replace("type=", "").strip(" \n/") for line in f]
+        if base_type not in folders:
+            raise ValueError(f"Invalid base type:{base_type}")

@@ -28,7 +28,7 @@ class foursquare_open_places(pyplaces_datasource):
     
     def check_release(self,release):
         with open("releases/foursquare/releases.txt", "r",encoding="utf-8-sig") as f:
-            folders = [line.strip(" \n/") for line in f]
+            folders = [line.replace("dt=", "").strip(" \n/") for line in f]
         if release not in folders:
             raise ValueError(f"Invalid release:{release}")
     

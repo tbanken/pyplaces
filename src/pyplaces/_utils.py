@@ -7,7 +7,7 @@ import operator
 import functools
 from typing import Union, List, Tuple, Any, Literal
 from json import loads
-import traceback
+import re
 import numpy as np
 from pyproj import Geod
 from shapely import Polygon
@@ -16,11 +16,9 @@ from pyarrow.compute import field
 from pyarrow.dataset import dataset, Expression
 from pyarrow.fs import S3FileSystem
 from geopandas import GeoDataFrame
-# from ._geocoder import geocode, _geocode_query_to_gdf
 from osmnx.geocoder import geocode, geocode_to_gdf
 from osmnx import settings
-# from . import settings
-from ._errors import S3ReadError
+from ._errors import S3ReadError, PyArrowError, UnsupportedOperatorError
 
 #TODO add releases automation
 #TODO add base types automation and code check
@@ -108,7 +106,7 @@ OperatorStr = Literal["==", "!=", "<", "<=", ">", ">=", "is_nan", "is_null", "is
 FilterValue = Union[str, int, float, List[Any], Tuple[Any, ...], None]
 FilterTuple = Tuple[FieldName, OperatorStr, FilterValue]
 FilterGroup = List[FilterTuple]
-FilterStructure = List[Union[FilterTuple, FilterGroup]]
+FilterStructure = List[Union[FilterTuple, FilterGroup]] | FilterTuple
 
 def tuple_to_expression(filter_tuple: FilterTuple) -> Expression:
     """
@@ -157,7 +155,7 @@ def tuple_to_expression(filter_tuple: FilterTuple) -> Expression:
             value = [value]
         return pyaro_field.isin(value)
     else:
-        raise ValueError(f"Unsupported operator: {op_str}")
+        raise UnsupportedOperatorError(f"Unsupported operator: {op_str}")
 
 def build_filter_expression(filter_structure: FilterStructure) -> Expression:
     """
@@ -187,7 +185,10 @@ def build_filter_expression(filter_structure: FilterStructure) -> Expression:
     This creates: (age > 30) AND (status == 'active' OR status == 'pending') AND (name IN ['John', 'Jane'])
     """
     if not filter_structure:
-        raise ValueError("Filter structure cannot be empty")
+        return None
+    
+    if not isinstance(filter_structure, list):
+        filter_structure = [filter_structure]
     
     # Process each filter or filter group
     expressions = []
@@ -221,7 +222,7 @@ def build_filter_expression(filter_structure: FilterStructure) -> Expression:
     return combined_expr
 
 
-def catch_and_raise_error(func):
+def catch_and_raise_pyarrow(func):
     """
     Decorator to catch and re-raise errors with full context
     
@@ -238,25 +239,32 @@ def catch_and_raise_error(func):
             # Capture the full traceback
             exc_type, exc_value, exc_traceback = sys.exc_info()
             
-            tb_details = traceback.extract_tb(exc_traceback)
-            error_message = (
-                f"Error in function {func.__name__}:\n"
-                f"Type: {exc_type.__name__}\n"
-                f"Message: {str(original_error)}\n"
-                f"Location: {tb_details[-1].filename}:{tb_details[-1].lineno}"
-            )
-            
-            # Raise a new exception with the detailed error information
-            raise ValueError(error_message) from original_error
-    
+            # tb_details = traceback.extract_tb(exc_traceback)
+            # error_message = (
+            #     f"Error in function {func.__name__}:\n"
+            #     f"Type: {exc_type.__name__}\n"
+            #     f"Message: {str(original_error)}\n"
+            #     f"Location: {tb_details[-1].filename}:{tb_details[-1].lineno}"
+            # )
+            # print(error_message)
+            error_message = str(original_error)
+            # print(exc_type.__name__)
+            if exc_type.__name__ == "UnsupportedOperatorError":
+                raise original_error
+            elif exc_type.__name__ == "ArrowInvalid":
+                match = re.search(r"FieldRef\.Name\(([^)]+)\)", error_message)
+                name = match.group(1)
+                raise PyArrowError(f"Invalid column name:\"{name}\"") from original_error
+            else:
+                match = re.search(r"\(([^)]+)\)", error_message)
+                first_value,last_value = match.group(1).split(",")
+                raise ValueError(f"Incorrect type used for value in filter: \"{last_value.strip()}\" should be \"{first_value.strip()}\"") from original_error   
     return wrapper
 
 
-@catch_and_raise_error
+@catch_and_raise_pyarrow
 def read_geoparquet_arrow(path: str,region: str,bbox: tuple[float,float,float,float],columns: list[str] | None = None,filters: FilterStructure | None = None) -> GeoDataFrame:
-    filter_expr = None
-    if filters:
-        filter_expr = build_filter_expression(filters)
+    filter_expr = build_filter_expression(filters)
     def decode_bytes(obj):
         if isinstance(obj, dict):
             return {decode_bytes(k): decode_bytes(v) for k, v in obj.items()}
@@ -336,9 +344,9 @@ def read_parquet_arrow(path: str,region: str,columns: list[str] | None = None,fi
     return GeoDataFrame.from_arrow(reader)
 
 def get_gdf_from_bbox(release,bbox,columns,filters,prefix,path,region):
-        main_path = path.format(release=release) + prefix
-        gdf = read_geoparquet_arrow(main_path,region,bbox,columns=columns,filters=filters)
-        return gdf
+    main_path = path.format(release=release) + prefix
+    gdf = read_geoparquet_arrow(main_path,region,bbox,columns=columns,filters=filters)
+    return gdf
     
 def geocode_point_to_bbox(address,distance,unit):
     point = geocode(address)

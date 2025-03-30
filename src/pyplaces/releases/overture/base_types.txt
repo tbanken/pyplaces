@@ -1,0 +1,6 @@
+type=bathymetry/
+type=infrastructure/
+type=land/
+type=land_cover/
+type=land_use/
+type=water/
