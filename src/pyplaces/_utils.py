@@ -150,22 +150,31 @@ def build_filter_expression(filter_structure: FilterStructure) -> Expression:
     
     return combined_expr
 
-def catch_column_filter_error(func):
-    try:
-        return func
-    except Exception as original_error:
-        # Capture the full traceback
-        exc_type= sys.exc_info()[0]
-        
-        error_message = str(original_error)
-        # print(exc_type.__name__)
-        if exc_type.__name__ == "UnsupportedOperatorError":
-            raise original_error
-        elif exc_type.__name__ == "ArrowInvalid":
-            match = re.search(r"FieldRef\.Name\(([^)]+)\)", error_message)
-            name = match.group(1)
-            raise PyArrowError(f"Invalid column name:\"{name}\"") from original_error
-        elif exc_type.__name__ =="ArrowNotImplementedError":
-            match = re.search(r"\(([^)]+)\)", error_message)
-            first_value,last_value = match.group(1).split(",")
-            raise ValueError(f"Incorrect type used for value in filter: \"{last_value.strip()}\" should be \"{first_value.strip()}\"") from original_error
+def catch_column_filter_error(exc_type: BaseException,error: Exception) -> None:
+    """
+    Throw user-friendly PyArrow errors.
+    
+    Parameters:
+    -----------
+    exc_type : BaseException
+        Exception data
+    error : Exception
+        Exception thrown
+    
+    Returns:
+    --------
+    None
+    """
+    # Capture the full traceback
+    error_message = str(error)
+    # print(exc_type.__name__)
+    if exc_type.__name__ == "UnsupportedOperatorError":
+        raise error
+    elif exc_type.__name__ == "ArrowInvalid":
+        match = re.search(r"FieldRef\.Name\(([^)]+)\)", error_message)
+        name = match.group(1)
+        raise PyArrowError(f"Invalid column name:\"{name}\"") from error
+    elif exc_type.__name__ =="ArrowNotImplementedError":
+        match = re.search(r"\(([^)]+)\)", error_message)
+        first_value,last_value = match.group(1).split(",")
+        raise ValueError(f"Incorrect type used for value in filter: \"{last_value.strip()}\" should be \"{first_value.strip()}\"") from error

@@ -5,6 +5,7 @@ from __future__ import annotations
 import functools
 import operator
 from json import loads
+import sys
 
 from pyarrow import RecordBatchReader
 from pyarrow.compute import field
@@ -72,15 +73,19 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     except Exception as e:
         raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
     
-    if columns:
-        batches = catch_column_filter_error(ds.to_batches(columns=columns, filter=combined_filter))
-    else:
-        batches = catch_column_filter_error(ds.to_batches(filter=combined_filter))
+    try:
+        if columns:
+            batches = ds.to_batches(columns=columns, filter=combined_filter)
+        else:
+            batches = ds.to_batches(filter=combined_filter)
+    except Exception as e:
+        exc_info = sys.exc_info()[0]
+        catch_column_filter_error(exc_info,e)
     
     non_empty_batches = (b for b in batches if b.num_rows > 0)
     
     schema = ds.schema
-    metadata_str = decode_bytes(schema.metadata)  
+    metadata_str = decode_bytes(schema.metadata) 
     geo_dict = loads(metadata_str["geo"])
     geo_column = geo_dict["primary_column"]
     
@@ -122,20 +127,23 @@ def read_parquet_arrow(path: str, region: str,
     ds = dataset(
         clean_path, filesystem=S3FileSystem(anonymous=True, region=region)
     )
-    if columns and filter_expr:
-        batches = catch_column_filter_error(ds.to_batches(columns=columns, filter=filter_expr))
-    elif filter_expr:
-        batches = catch_column_filter_error(ds.to_batches(filter=filter_expr))
-    else:
-        batches = catch_column_filter_error(ds.to_batches(columns=columns))
-
+    try:
+        if columns and filter_expr:
+            batches = ds.to_batches(columns=columns, filter=filter_expr)
+        elif filter_expr:
+            batches = ds.to_batches(filter=filter_expr)
+        else:
+            batches = ds.to_batches(columns=columns)
+    except Exception as e:
+        exc_info = sys.exc_info()[0]
+        catch_column_filter_error(exc_info,e)
+    
     non_empty_batches = (b for b in batches if b.num_rows > 0)
     schema = ds.schema
     reader = RecordBatchReader.from_batches(schema, non_empty_batches)
+    return reader.read_pandas()
 
-    return GeoDataFrame.from_arrow(reader)
-
-def get_gdf_from_bbox(release, bbox, columns, filters, prefix, path, region):
+def get_gdf_from_bbox(release:str, bbox:tuple[float,float,float,float], columns:list[str], filters: FilterStructure, prefix: str, path: str, region: str):
     """Helper function to get a geodataframe from a bounding box."""
     main_path = path.format(release=release) + prefix
     gdf = read_geoparquet_arrow(main_path, region, bbox, columns=columns, filters=filters)
@@ -145,7 +153,7 @@ def from_address(address: str | tuple[float,float], prefix: str, main_path: str,
             release: str, columns: list[str]| None = None, filters: FilterStructure| None = None,
             distance: float = 500, unit: str = "m") -> GeoDataFrame:
     """
-    Get data around an address or coordinates.
+    Wrapper to geocode an address and fetch the geoparquet data within the address's area.
     
     Parameters:
     -----------
@@ -174,13 +182,13 @@ def from_address(address: str | tuple[float,float], prefix: str, main_path: str,
         Filtered geodataframe
     """
     bbox = geocode_point_to_bbox(address, distance, unit)
-    gdf = get_gdf_from_bbox(release, bbox, columns, filters, prefix, main_path, region)
+    gdf = from_bbox(bbox,prefix,main_path,region,release,columns,filters)
     return gdf
     
 def from_place(address: str, prefix: str, main_path: str, region: str, release: str,
-             columns: list[str]| None=None, filters: FilterStructure| None=None) -> GeoDataFrame:
+            columns: list[str]| None=None, filters: FilterStructure| None=None) -> GeoDataFrame:
     """
-    Get data within a named place.
+    Wrapper to geocode a place and fetch the geoparquet data within the place.
     
     Parameters:
     -----------
@@ -205,14 +213,14 @@ def from_place(address: str, prefix: str, main_path: str, region: str, release: 
         Filtered geodataframe
     """
     geometry, bbox = geocode_place_to_bbox(address)
-    gdf = get_gdf_from_bbox(release, bbox, columns, filters, prefix, main_path, region)
+    gdf = from_bbox(bbox,prefix,main_path,region,release,columns,filters)
     filtered_gdf = gdf[gdf.within(geometry)]
     return filtered_gdf
 
 def from_bbox(bbox: tuple[float,float,float,float], prefix: str, main_path: str, region: str, 
             release: str, columns: list[str]| None=None, filters: FilterStructure| None=None) -> GeoDataFrame:
     """
-    Get data within a bounding box.
+    Wrapper to fetch the geoparquet data within the bounding box.
     
     Parameters:
     -----------

@@ -44,9 +44,9 @@ def point_buffer(lon: float, lat: float, radius_m: float) -> Polygon:
                             )
     return Polygon(zip(lons, lats))
 
-def geocode_point_to_bbox(address, distance, unit):
+def geocode_point_to_bbox(address: str, distance: float, unit: str):
     """
-    Convert an address or coordinates to a bounding box with a buffer.
+    Convert an address or coordinates to a bounding box using a buffer.
     
     Parameters:
     -----------
@@ -70,7 +70,7 @@ def geocode_point_to_bbox(address, distance, unit):
     bbox = point_buffer(point[1], point[0], distance).bounds
     return bbox
 
-def geocode_place_to_bbox(address):
+def geocode_place_to_bbox(address: str):
     """
     Convert a place name to its geometry and bounding box.
     

@@ -1,4 +1,3 @@
-from pyplaces.foursquare_open_places import foursquare_places_from_address
 import pyplaces
 
 
@@ -8,8 +7,9 @@ import pyplaces
 
 
 
-df = pyplaces.overture_maps.overture_places_from_address("204 Hemenway Street")
+# df = pyplaces.overture_maps.overture_places_from_address("204 Hemenway Street")
 
+df = pyplaces.foursquare_open_places.foursquare_places_from_address("204 Hemenway Street")
 
 print(df.columns)
 print(df.head(10))
