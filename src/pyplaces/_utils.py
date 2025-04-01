@@ -220,41 +220,27 @@ def build_filter_expression(filter_structure: FilterStructure) -> Expression:
     return combined_expr
 
 
-def catch_and_raise_pyarrow(func):
-    """
-    Decorator to catch and re-raise errors with full context
-    
-    Args:
-        func (callable): Function to wrap
-    
-    Returns:
-        Wrapped function that raises a custom exception
-    """
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as original_error:
-            # Capture the full traceback
-            exc_type= sys.exc_info()[0]
-            
-            error_message = str(original_error)
-            # print(exc_type.__name__)
-            if exc_type.__name__ == "UnsupportedOperatorError":
-                raise original_error
-            elif exc_type.__name__ == "ArrowInvalid":
-                match = re.search(r"FieldRef\.Name\(([^)]+)\)", error_message)
-                name = match.group(1)
-                raise PyArrowError(f"Invalid column name:\"{name}\"") from original_error
-            elif exc_type.__name__ =="ArrowNotImplementedError":
-                match = re.search(r"\(([^)]+)\)", error_message)
-                first_value,last_value = match.group(1).split(",")
-                raise ValueError(f"Incorrect type used for value in filter: \"{last_value.strip()}\" should be \"{first_value.strip()}\"") from original_error
-            else:
-                raise original_error   
-    return wrapper
+def catch_column_filter_error(func):
+    try:
+        return func
+    except Exception as original_error:
+        # Capture the full traceback
+        exc_type= sys.exc_info()[0]
+        
+        error_message = str(original_error)
+        # print(exc_type.__name__)
+        if exc_type.__name__ == "UnsupportedOperatorError":
+            raise original_error
+        elif exc_type.__name__ == "ArrowInvalid":
+            match = re.search(r"FieldRef\.Name\(([^)]+)\)", error_message)
+            name = match.group(1)
+            raise PyArrowError(f"Invalid column name:\"{name}\"") from original_error
+        elif exc_type.__name__ =="ArrowNotImplementedError":
+            match = re.search(r"\(([^)]+)\)", error_message)
+            first_value,last_value = match.group(1).split(",")
+            raise ValueError(f"Incorrect type used for value in filter: \"{last_value.strip()}\" should be \"{first_value.strip()}\"") from original_error  
 
 
-@catch_and_raise_pyarrow
 def read_geoparquet_arrow(path: str,region: str,bbox: tuple[float,float,float,float],columns: list[str] | None = None,filters: FilterStructure | None = None) -> GeoDataFrame:
     filter_expr = build_filter_expression(filters)
     def decode_bytes(obj):
@@ -279,7 +265,6 @@ def read_geoparquet_arrow(path: str,region: str,bbox: tuple[float,float,float,fl
     combined_filter = functools.reduce(operator.and_, filter_ls)
     
     clean_path=path.replace("s3://", "")
-    #wrap this for error unable to read from bucket
     try:
         ds = dataset(
         clean_path, filesystem=S3FileSystem(anonymous=True, region=region)
@@ -287,9 +272,9 @@ def read_geoparquet_arrow(path: str,region: str,bbox: tuple[float,float,float,fl
     except Exception as e:
         raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
     if columns:
-        batches = ds.to_batches(columns=columns,filter=combined_filter)
+        batches = catch_column_filter_error(ds.to_batches(columns=columns,filter=combined_filter))
     else:
-        batches = ds.to_batches(filter=combined_filter)
+        batches = catch_column_filter_error(ds.to_batches(filter=combined_filter))
     #wrap this for incorrect field for incorrect column in filter or select, or value in filter
     
     non_empty_batches = (b for b in batches if b.num_rows > 0)
@@ -312,7 +297,6 @@ def read_geoparquet_arrow(path: str,region: str,bbox: tuple[float,float,float,fl
 
     return GeoDataFrame.from_arrow(reader)
 
-@catch_and_raise_pyarrow
 def read_parquet_arrow(path: str,region: str,columns: list[str] | None = None,filters: FilterStructure | None = None) -> GeoDataFrame:
     filter_expr = build_filter_expression(filters)
     clean_path=path.replace("s3://", "")
@@ -320,11 +304,11 @@ def read_parquet_arrow(path: str,region: str,columns: list[str] | None = None,fi
         clean_path, filesystem=S3FileSystem(anonymous=True, region=region)
     )
     if columns and filter_expr:
-        batches = ds.to_batches(columns=columns,filter=filter_expr)
+        batches = catch_column_filter_error(ds.to_batches(columns=columns,filter=filter_expr))
     elif filter_expr:
-        batches = ds.to_batches(filter=filter_expr)
+        batches = catch_column_filter_error(ds.to_batches(filter=filter_expr))
     else:
-        batches = ds.to_batches(columns=columns)
+        batches = catch_column_filter_error(ds.to_batches(columns=columns))
 
     non_empty_batches = (b for b in batches if b.num_rows > 0)
     schema = ds.schema
@@ -338,7 +322,10 @@ def get_gdf_from_bbox(release,bbox,columns,filters,prefix,path,region):
     return gdf
     
 def geocode_point_to_bbox(address,distance,unit):
-    point = geocode(address)
+    if isinstance(address,str):
+        point = geocode(address)
+    else:
+        point = address
     distance = convert_to_meters(distance,unit)
     bbox = point_buffer(point[1],point[0],distance).bounds
     return bbox
@@ -349,6 +336,21 @@ def geocode_place_to_bbox(address):
     geometry = row["geometry"]
     bbox = (row["bbox_west"],row["bbox_south"],row["bbox_east"],row["bbox_north"])
     return geometry, bbox
+
+def from_address(address: str | tuple[float,float],prefix: str,main_path: str, region: str,release: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m")-> GeoDataFrame:
+    bbox = geocode_point_to_bbox(address,distance,unit)
+    gdf = get_gdf_from_bbox(release,bbox,columns,filters,prefix,main_path,region)
+    return gdf
+    
+def from_place(address: str,prefix: str,main_path: str, region: str,release: str,columns: list[str]| None=None,filters: FilterStructure| None=None)-> GeoDataFrame:
+    geometry,bbox = geocode_place_to_bbox(address)
+    gdf = get_gdf_from_bbox(release,bbox,columns,filters,prefix,main_path,region)
+    filtered_gdf = gdf[gdf.within(geometry)]
+    return filtered_gdf
+
+def from_bbox(bbox: tuple[float,float,float,float],prefix: str,main_path: str, region: str,release: str,columns: list[str]| None=None,filters: FilterStructure| None=None)-> GeoDataFrame:
+    gdf = get_gdf_from_bbox(release,bbox,columns,filters,prefix,main_path,region)
+    return gdf
 
 
 def convert_to_meters(value: float,unit: str) -> float:

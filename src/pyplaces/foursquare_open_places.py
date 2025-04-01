@@ -1,6 +1,6 @@
+from importlib import resources
 from geopandas import GeoDataFrame
-from ._pyplaces_datasource import pyplaces_datasource
-from ._utils import FilterStructure,read_parquet_arrow
+from ._utils import FilterStructure, read_parquet_arrow, from_address, from_bbox, from_place
 
 FSQ_MAIN_PATH = 's3://fsq-os-places-us-east-1/release/dt={release}/'
 FSQ_BUCKET = 'fsq-os-places-us-east-1'
@@ -15,26 +15,30 @@ FSQ_FUSED_REGION = 'us-west-2'
 FSQ_FUSED_LATEST_RELEASE = "2025-01-10"
 FSQ_FUSED_PLACES_PREFIX = "places/"
 
-class foursquare_open_places(pyplaces_datasource):
-    
-    def foursquare_places_from_address(self,address: str,columns: list[str]| None = None,filters: FilterStructure | None = None,distance: float = 500 ,unit: str = "m" ,release: str =FSQ_LATEST_RELEASE) -> GeoDataFrame:
-        return self.from_address(address,FSQ_PLACES_PREFIX,FSQ_MAIN_PATH,FSQ_REGION,release,columns,filters,distance,unit)
 
-    def foursquare_places_from_place(self,address: str,columns: list[str]| None=None,filters: FilterStructure=None,release: str=FSQ_LATEST_RELEASE)-> GeoDataFrame:
-        return self.from_place(address,FSQ_PLACES_PREFIX,FSQ_MAIN_PATH,FSQ_REGION,release,columns,filters)
+    
+def foursquare_places_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure | None = None,distance: float = 500 ,unit: str = "m" ,release: str =FSQ_LATEST_RELEASE) -> GeoDataFrame:
+    check_release(release)
+    return from_address(address,FSQ_PLACES_PREFIX,FSQ_MAIN_PATH,FSQ_REGION,release,columns,filters,distance,unit)
 
-    def foursquare_places_from_bbox(self,bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=FSQ_LATEST_RELEASE)-> GeoDataFrame:
-        return self.from_bbox(bbox,FSQ_PLACES_PREFIX,FSQ_MAIN_PATH,FSQ_REGION,release,columns,filters)
-    
-    def check_release(self,release):
-        with open("releases/foursquare/releases.txt", "r",encoding="utf-8-sig") as f:
-            folders = [line.replace("dt=", "").strip(" \n/") for line in f]
-        if release not in folders:
-            raise ValueError(f"Invalid release:{release}")
-    
-    def get_categories(self,columns: list[str] | None = None,filters: FilterStructure | None = None,release: str=FSQ_LATEST_RELEASE):
-        path = FSQ_MAIN_PATH.format(release=release) + FSQ_CATEGORIES_PREFIX
-        return read_parquet_arrow(path,FSQ_REGION,columns,filters)
+def foursquare_places_from_place(address: str,columns: list[str]| None=None,filters: FilterStructure=None,release: str=FSQ_LATEST_RELEASE)-> GeoDataFrame:
+    check_release(release)
+    return from_place(address,FSQ_PLACES_PREFIX,FSQ_MAIN_PATH,FSQ_REGION,release,columns,filters)
+
+def foursquare_places_from_bbox(bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=FSQ_LATEST_RELEASE)-> GeoDataFrame:
+    check_release(release)
+    return from_bbox(bbox,FSQ_PLACES_PREFIX,FSQ_MAIN_PATH,FSQ_REGION,release,columns,filters)
+
+def check_release(release):
+    with resources.files("pyplaces").joinpath("releases/foursquare/releases.txt").open( "r",encoding="utf-8-sig") as f:
+        folders = [line.replace("dt=", "").strip(" \n/") for line in f]
+    if release not in folders:
+        raise ValueError(f"Invalid release:{release}")
+
+def get_categories(columns: list[str] | None = None,filters: FilterStructure | None = None,release: str=FSQ_LATEST_RELEASE):
+    check_release(release)
+    path = FSQ_MAIN_PATH.format(release=release) + FSQ_CATEGORIES_PREFIX
+    return read_parquet_arrow(path,FSQ_REGION,columns,filters)
     
         # from pyarrow.parquet import ParquetFile
     # from pyarrow.fs import S3FileSystem
