@@ -1,6 +1,7 @@
 from geopandas import GeoDataFrame
 from importlib import resources
-from ._utils import FilterStructure, from_address, from_bbox, from_place
+from ._utils import FilterStructure, wrap_functions_with_release
+from ._io_utils import from_address, from_bbox, from_place
 
 OVERTURE_MAIN_PATH = 's3://overturemaps-us-west-2/release/{release}/'
 OVERTURE_BUCKET = 'overturemaps-us-west-2'
@@ -97,6 +98,8 @@ def check_release(release):
         folders = [line.strip(" \n/") for line in f]
     if release not in folders:
         raise ValueError(f"Invalid release:{release}")
+    
+wrap_functions_with_release(__name__, check_release)
 
 #TODO no automation
 def check_base_type(base_type):   

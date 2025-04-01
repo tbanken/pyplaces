@@ -13,5 +13,3 @@ df = pyplaces.overture_maps.overture_places_from_address("204 Hemenway Street")
 
 print(df.columns)
 print(df.head(10))
-
-print(type(df.columns))

@@ -148,7 +148,7 @@ class TestFoursquarePlaces(unittest.TestCase):
         with patch.object(self.fsq_places, 'get_categories', return_value=GeoDataFrame):
             result = self.fsq_places.get_categories()
             # columns = result.columns.to_list().sort()
-            print(result)
+            print(result.columns)
             self.assertIsInstance(result, GeoDataFrame)
             self.assertEqual(columns, self.categories_schema)
         
