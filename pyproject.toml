@@ -1,33 +1,81 @@
-[project]
-authors = [{name = "Ted", email = "tedbanken@gmail.com"}]
-dependencies = []
-name = "pyplaces"
-requires-python = ">=3.9"
-version = "0.1.0"
-dynamic = ["_version.py"]
-description = "Package to easily read places data in remote storage from an OSM place or bounding box."
-readme = "README.md"
-license-files = ["LICENSE"]
-
-
 [build-system]
-build-backend = "hatchling.build"
 requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.pixi.workspace]
-channels = ["conda-forge"]
-platforms = ["win-64"]
+[project]
+name = "pyplaces"
+dynamic = ["version"]
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Ted", email = "tedbanken@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = []
 
-[tool.pixi.pypi-dependencies]
-pyplaces = { path = ".", editable = true }
+[project.urls]
+Documentation = "https://github.com/unknown/pyplaces#readme"
+Issues = "https://github.com/unknown/pyplaces/issues"
+Source = "https://github.com/unknown/pyplaces"
 
-[tool.pixi.tasks]
+[tool.hatch.version]
+path = "src/pyplaces/__about__.py"
 
-[tool.pixi.dependencies]
-pyarrow = ">=19.0.1,<20"
-geopandas = ">=1.0.1,<2"
-shapely = ">=2.0.7,<3"
-pyproj = ">=3.7.1,<4"
-numpy = ">=2.2.4,<3"
-pytest = ">=8.3.5,<9"
-osmnx = ">=2.0.2,<3"
+[tool.hatch.envs.default]
+dependencies = [
+  "coverage[toml]>=6.5",
+  "pytest",
+]
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = [
+  "- coverage combine",
+  "coverage report",
+]
+cov = [
+  "test-cov",
+  "cov-report",
+]
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.envs.types]
+dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/pyplaces tests}"
+
+[tool.coverage.run]
+source_pkgs = ["pyplaces", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/pyplaces/__about__.py",
+]
+
+[tool.coverage.paths]
+pyplaces = ["src/pyplaces", "*/pyplaces/src/pyplaces"]
+tests = ["tests", "*/pyplaces/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]

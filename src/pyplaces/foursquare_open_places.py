@@ -18,7 +18,7 @@ FSQ_FUSED_BUCKET = 's-west-2.opendata.source.coop'
 FSQ_FUSED_REGION = 'us-west-2'
 FSQ_FUSED_LATEST_RELEASE = "2025-01-10"
 FSQ_FUSED_PLACES_PREFIX = "places/"
-    
+
 def foursquare_places_from_address(address: str, 
                                     columns: list[str] | None = None, 
                                     filters: FilterStructure | None = None, 
