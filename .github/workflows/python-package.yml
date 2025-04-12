@@ -37,6 +37,7 @@ jobs:
         python -m pip install hatch
     - name: Set up Hatch environment and install dependencies
       run: hatch env create
+      run: hatch run
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
