@@ -49,3 +49,5 @@ jobs:
       run: hatch build
     - name: Test
       run: hatch run test
+    - name: Publish
+      run: hatch publish
