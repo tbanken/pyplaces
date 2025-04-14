@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import numpy as np
 from pyproj import Geod
 from shapely import Polygon
 from ._conversion_utils import convert_to_meters
@@ -31,18 +30,25 @@ def point_buffer(lon: float, lat: float, radius_m: float) -> Polygon:
     shapely.Polygon
         Polygon representing the buffer
     """
-    # Use this instead of `.buffer()` provided by geodataframe
-    # Adapted from:
-    # https://stackoverflow.com/questions/31492220/how-to-plot-a-tissot-with-cartopy-and-matplotlib
+    
     geod = Geod(ellps='WGS84')
     num_vtxs = 64
-    lons, lats, _ = geod.fwd(np.repeat(lon, num_vtxs),
-                            np.repeat(lat, num_vtxs),
-                            np.linspace(360, 0, num_vtxs),
-                            np.repeat(radius_m, num_vtxs),
-                            radians=False
-                            )
-    return Polygon(zip(lons, lats))
+    
+    # Generate equally spaced angles in degrees from 360 to 0
+    angles = []
+    for i in range(num_vtxs):
+        angle = 360 - (i * 360 / num_vtxs)
+        angles.append(angle)
+    
+    # Generate the coordinates for each vertex of the buffer
+    coords = []
+    for angle in angles:
+        # Calculate a single point - geod.fwd returns lon, lat, az for a single point
+        fwd_lon, fwd_lat, _ = geod.fwd(lon, lat, angle, radius_m, radians=False)
+        coords.append((fwd_lon, fwd_lat))
+    
+    # Create a polygon from the coordinates
+    return Polygon(coords)
 
 def geocode_point_to_bbox(address: str, distance: float, unit: str):
     """

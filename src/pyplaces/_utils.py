@@ -45,7 +45,8 @@ def wrap_functions_with_release(module_name, before_func):
                 setattr(module, name, run_before_decorator(before_func)(attr))
 
 FieldName: TypeAlias = str
-OperatorStr: TypeAlias = Literal["==", "!=", "<", "<=", ">", ">=", "is_nan", "is_null", "is_valid", "isin"]
+OperatorStr: TypeAlias = Literal["==", "!=", "<", "<=", ">", ">=",
+                                "is_nan", "is_null", "is_valid", "isin"]
 FilterValue: TypeAlias = Union[str, int, float, List[Any], Tuple[Any, ...], None]
 FilterTuple: TypeAlias = Tuple[FieldName, OperatorStr, FilterValue]
 FilterGroup: TypeAlias = List[FilterTuple]
