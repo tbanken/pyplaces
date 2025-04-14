@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pyplaces"
 dynamic = ["version"]
-description = ''
+description = 'pyplaces is a Python package meant to streamline the usage of large places datasets, notably Overture Maps and Foursquare Open Places. All of the datasets and past releases can be downloaded to a specific address, place or bounding box. Conventionally, users download the data themselves or use a tool such as DuckDB to download what they need, whereas pyplaces is more integrated, faster, and more precise.'
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
