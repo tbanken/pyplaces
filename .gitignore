@@ -3,6 +3,7 @@ __pycache__
 cache
 .pytest_cache
 
+#vscode
+.vscode
 
-pyproject_stuff.txt
-dist
+docs

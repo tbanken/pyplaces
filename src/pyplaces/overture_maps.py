@@ -18,7 +18,7 @@ OVERTURE_TRANSPORTATION_SEGMENT_PREFIX = "theme=transportation/type=segment/"
 OVERTURE_TRANSPORTATION_CONNECTOR_PREFIX = "theme=transportation/type=connector/"
 OVERTURE_BASE_PREFIX = "theme=base/type={type}"
 
-def overture_places_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
+def overture_places_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure | None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieve places data from Overture based on an address.
     
@@ -360,7 +360,7 @@ def overture_base_from_address(address: str,base_type: str,columns: list[str]| N
     GeoDataFrame
         A GeoDataFrame containing base data of the specified type around the address
     """
-    check_base_type(base_type)
+    _check_base_type(base_type)
     complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
     return from_address(address,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
     
@@ -387,7 +387,7 @@ def overture_base_from_place(address: str,base_type: str,columns: list[str]| Non
     GeoDataFrame
         A GeoDataFrame containing base data of the specified type within the place
     """
-    check_base_type(base_type)
+    _check_base_type(base_type)
     complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
     return from_place(address,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
     
@@ -414,14 +414,14 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
     GeoDataFrame
         A GeoDataFrame containing base data of the specified type within the bounding box
     """
-    check_base_type(base_type)
+    _check_base_type(base_type)
     complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
     return from_bbox(bbox,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
 
 
 #TODO no automation
-def check_base_type(base_type):
+def _check_base_type(base_type):
     """
     Validate if the provided base type is valid.
     
@@ -440,7 +440,7 @@ def check_base_type(base_type):
     if base_type not in folders:
         raise ValueError(f"Invalid base type:{base_type}")
     
-def check_release(release):
+def _check_release(release):
     """
     Validate if the provided Overture release is valid.
     
@@ -459,4 +459,9 @@ def check_release(release):
     if release not in folders:
         raise ValueError(f"Invalid release:{release}")
     
-wrap_functions_with_release(__name__, check_release)
+wrap_functions_with_release(__name__, _check_release)
+
+__all__ = ["overture_addresses_from_address","overture_addresses_from_bbox","overture_addresses_from_place","overture_base_from_address", 
+            "overture_base_from_bbox","overture_base_from_place","overture_buildings_from_address","overture_buildings_from_bbox",
+            "overture_buildings_from_place","overture_places_from_address","overture_places_from_bbox","overture_places_from_place",
+            "overture_transportation_from_address","overture_transportation_from_bbox","overture_transportation_from_place"]

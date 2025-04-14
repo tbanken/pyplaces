@@ -30,8 +30,9 @@ dependencies = [
 "geopandas>=1.0.1,<2",
 "shapely>=2.0.7,<3",
 "pyproj>=3.7.1,<4",
-"numpy>=2.2.4,<3",
-"osmnx>=2.0.2,<3",]
+"numpy>=1.14,<2",
+"osmnx>=2.0.2,<3",
+"typing-extensions"]
 
 [project.urls]
 Documentation = "https://github.com/unknown/pyplaces#readme"

@@ -194,3 +194,6 @@ wrap_functions_with_release(__name__, _check_release)
     #     print("Matched Categories and IDs:", matching_categories)
     # else:
     #     print("No relevant categories found.")
+
+
+__all__ = ["foursquare_places_from_address", "foursquare_places_from_bbox", "foursquare_places_from_place", "get_categories"]

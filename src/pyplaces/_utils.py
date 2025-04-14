@@ -7,6 +7,7 @@ import functools
 import inspect
 import re
 from typing import Union, List, Tuple, Any, Literal
+from typing_extensions import TypeAlias
 
 from pyarrow.compute import field
 from pyarrow.dataset import Expression
@@ -43,12 +44,14 @@ def wrap_functions_with_release(module_name, before_func):
             if "release" in sig.parameters:  # Wrap only functions with "release"
                 setattr(module, name, run_before_decorator(before_func)(attr))
 
-FieldName = str
-OperatorStr = Literal["==", "!=", "<", "<=", ">", ">=", "is_nan", "is_null", "is_valid", "isin"]
-FilterValue = Union[str, int, float, List[Any], Tuple[Any, ...], None]
-FilterTuple = Tuple[FieldName, OperatorStr, FilterValue]
-FilterGroup = List[FilterTuple]
-FilterStructure = List[Union[FilterTuple, FilterGroup]] | FilterTuple
+FieldName: TypeAlias = str
+OperatorStr: TypeAlias = Literal["==", "!=", "<", "<=", ">", ">=", "is_nan", "is_null", "is_valid", "isin"]
+FilterValue: TypeAlias = Union[str, int, float, List[Any], Tuple[Any, ...], None]
+FilterTuple: TypeAlias = Tuple[FieldName, OperatorStr, FilterValue]
+FilterGroup: TypeAlias = List[FilterTuple]
+
+FilterStructure: TypeAlias = List[Union[FilterTuple, FilterGroup]] | FilterTuple
+"""FilterStructure represents a list of filtering rules for a DataFrame-like object."""
 
 def tuple_to_expression(filter_tuple: FilterTuple) -> Expression:
     """
