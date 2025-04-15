@@ -6,4 +6,7 @@ cache
 #vscode
 .vscode
 
+#conda recipe
+conda-recipes
+
 docs

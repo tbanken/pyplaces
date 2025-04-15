@@ -20,7 +20,7 @@ OVERTURE_BASE_PREFIX = "theme=base/type={type}"
 
 def overture_places_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure | None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
     """
-    Retrieve places data from Overture based on an address.
+    Retrieve places data from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
@@ -29,24 +29,28 @@ def overture_places_from_address(address: str,columns: list[str]| None = None,fi
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results.
+        Should be a list in the format: ::
+        [("column","==",2)]
+        [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+        [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     distance : float, optional
-        Search radius from the address, by default 500
+        Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
-        Unit for the distance ('m' for meters, etc.), by default "m"
+        Unit of measurement for the distance. Defaults to "m" (meters). One of: "m","km","in","ft","yd","mi"
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
     GeoDataFrame
-        A GeoDataFrame containing places data around the specified address
+        A GeoDataFrame containing places data within the specified bounding box of the address
     """
     return from_address(address,OVERTURE_PLACES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
 
 def overture_places_from_place(address: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
     """
-    Retrieve places data from Overture based on a named place.
+    Retrieve places data from Overture by its address or place name.
     
     Parameters
     ----------
@@ -55,9 +59,13 @@ def overture_places_from_place(address: str,columns: list[str]| None=None,filter
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
@@ -77,9 +85,13 @@ def overture_places_from_bbox(bbox: tuple[float,float,float,float],columns: list
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
@@ -90,7 +102,7 @@ def overture_places_from_bbox(bbox: tuple[float,float,float,float],columns: list
 
 def overture_buildings_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,building_part: bool=False) -> GeoDataFrame:
     """
-    Retrieve buildings data from Overture based on an address.
+    Retrieve buildings data from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
@@ -99,20 +111,24 @@ def overture_buildings_from_address(address: str,columns: list[str]| None = None
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     distance : float, optional
-        Search radius from the address, by default 500
+        Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
-        Unit for the distance ('m' for meters, etc.), by default "m"
+        Unit of measurement for the distance. Defaults to "m" (meters). One of: "m","km","in","ft","yd","mi"
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
     building_part : bool, optional
         Whether to retrieve building parts instead of whole buildings, by default False
         
     Returns
     -------
     GeoDataFrame
-        A GeoDataFrame containing buildings data around the specified address
+        A GeoDataFrame containing buildings data within the specified bounding box of the address
     """
     if building_part:
         prefix = OVERTURE_BUILDINGS_PART_PREFIX
@@ -122,7 +138,7 @@ def overture_buildings_from_address(address: str,columns: list[str]| None = None
 
 def overture_buildings_from_place(address: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE,building_part: bool=False)-> GeoDataFrame:
     """
-    Retrieve buildings data from Overture based on a named place.
+    Retrieve buildings data from Overture by its address or place name.
     
     Parameters
     ----------
@@ -131,9 +147,13 @@ def overture_buildings_from_place(address: str,columns: list[str]| None=None,fil
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
     building_part : bool, optional
         Whether to retrieve building parts instead of whole buildings, by default False
         
@@ -159,9 +179,13 @@ def overture_buildings_from_bbox(bbox: tuple[float,float,float,float],columns: l
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
     building_part : bool, optional
         Whether to retrieve building parts instead of whole buildings, by default False
         
@@ -178,7 +202,7 @@ def overture_buildings_from_bbox(bbox: tuple[float,float,float,float],columns: l
 
 def overture_transportation_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,connector:bool=False) -> GeoDataFrame:
     """
-    Retrieve transportation data from Overture based on an address.
+    Retrieve transportation data from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
@@ -187,20 +211,24 @@ def overture_transportation_from_address(address: str,columns: list[str]| None =
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     distance : float, optional
-        Search radius from the address, by default 500
+        Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
-        Unit for the distance ('m' for meters, etc.), by default "m"
+        Unit of measurement for the distance. Defaults to "m" (meters). One of: "m","km","in","ft","yd","mi"
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
     connector : bool, optional
         Whether to retrieve connectors instead of segments, by default False
         
     Returns
     -------
     GeoDataFrame
-        A GeoDataFrame containing transportation data around the specified address
+        A GeoDataFrame containing transportation data within the specified bounding box of the address
     """
     if connector:
         prefix = OVERTURE_TRANSPORTATION_CONNECTOR_PREFIX
@@ -210,7 +238,7 @@ def overture_transportation_from_address(address: str,columns: list[str]| None =
 
 def overture_transportation_from_place(address: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE,connector:bool=False)-> GeoDataFrame:
     """
-    Retrieve transportation data from Overture based on a named place.
+    Retrieve transportation data from Overture by its address or place name.
     
     Parameters
     ----------
@@ -219,9 +247,13 @@ def overture_transportation_from_place(address: str,columns: list[str]| None=Non
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
     connector : bool, optional
         Whether to retrieve connectors instead of segments, by default False
         
@@ -247,9 +279,13 @@ def overture_transportation_from_bbox(bbox: tuple[float,float,float,float],colum
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
     connector : bool, optional
         Whether to retrieve connectors instead of segments, by default False
         
@@ -266,7 +302,7 @@ def overture_transportation_from_bbox(bbox: tuple[float,float,float,float],colum
     
 def overture_addresses_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
     """
-    Retrieve address data from Overture based on an address.
+    Retrieve address data from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
@@ -275,24 +311,28 @@ def overture_addresses_from_address(address: str,columns: list[str]| None = None
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     distance : float, optional
-        Search radius from the address, by default 500
+        Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
-        Unit for the distance ('m' for meters, etc.), by default "m"
+        Unit of measurement for the distance. Defaults to "m" (meters). One of: "m","km","in","ft","yd","mi"
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
     GeoDataFrame
-        A GeoDataFrame containing address data around the specified address
+        A GeoDataFrame containing address data within the specified bounding box of the address
     """
     return from_address(address,OVERTURE_ADDRESSES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
 
 def overture_addresses_from_place(address: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
     """
-    Retrieve address data from Overture based on a named place.
+    Retrieve address data from Overture by its address or place name.
     
     Parameters
     ----------
@@ -301,9 +341,13 @@ def overture_addresses_from_place(address: str,columns: list[str]| None=None,fil
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
@@ -323,9 +367,13 @@ def overture_addresses_from_bbox(bbox: tuple[float,float,float,float],columns: l
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
@@ -336,51 +384,59 @@ def overture_addresses_from_bbox(bbox: tuple[float,float,float,float],columns: l
 
 def overture_base_from_address(address: str,base_type: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
     """
-    Retrieve base data of a specific type from Overture based on an address.
+    Retrieve base data of a specific type from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
     address : str
         The address to search from
     base_type : str
-        The type of base data to retrieve
+        The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water".
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     distance : float, optional
-        Search radius from the address, by default 500
+        Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
-        Unit for the distance ('m' for meters, etc.), by default "m"
+        Unit of measurement for the distance. Defaults to "m" (meters). One of: "m","km","in","ft","yd","mi"
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
     GeoDataFrame
-        A GeoDataFrame containing base data of the specified type around the address
+        A GeoDataFrame containing base data of the specified type within the specified bounding box of the address.
     """
     _check_base_type(base_type)
     complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
     return from_address(address,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
     
 
-def overture_base_from_place(address: str,base_type: str,columns: list[str]| None=None,filters: FilterStructure=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
+def overture_base_from_place(address: str,base_type: str,columns: list[str]| None=None,filters: FilterStructure | None =None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
     """
-    Retrieve base data of a specific type from Overture based on a named place.
+    Retrieve base data of a specific type from Overture by its address or place name.
     
     Parameters
     ----------
     address : str
         The place name to search within
     base_type : str
-        The type of base data to retrieve
+        The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water"
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
-    filters : FilterStructure, optional
-        Filters to apply to the data, by default None
+    filters : FilterStructure | None, optional
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
@@ -401,13 +457,17 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
     bbox : tuple[float, float, float, float]
         The bounding box coordinates (min_x, min_y, max_x, max_y)
     base_type : str
-        The type of base data to retrieve
+        The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water"
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
-        Filters to apply to the data, by default None
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, optional
-        Overture data release version, by default OVERTURE_LATEST_RELEASE
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------

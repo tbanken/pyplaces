@@ -19,14 +19,14 @@ FSQ_FUSED_REGION = 'us-west-2'
 FSQ_FUSED_LATEST_RELEASE = "2025-01-10"
 FSQ_FUSED_PLACES_PREFIX = "places/"
 
-def foursquare_places_from_address(address: str, 
-                                    columns: list[str] | None = None, 
-                                    filters: FilterStructure | None = None, 
-                                    distance: float = 500, 
-                                    unit: str = "m", 
+def foursquare_places_from_address(address: str,
+                                    columns: list[str] | None = None,
+                                    filters: FilterStructure | None = None,
+                                    distance: float = 500,
+                                    unit: str = "m",
                                     release: str = FSQ_LATEST_RELEASE) -> GeoDataFrame:
     """
-    Retrieves Foursquare places data around a specified address.
+    Retrieves Foursquare places data in a bounding box around a specified address.
     
     Parameters
     ----------
@@ -35,28 +35,32 @@ def foursquare_places_from_address(address: str,
     columns : list[str] | None, optional
         Specific columns to retrieve from the dataset. If None, all columns are retrieved.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     distance : float, default 500
-        Radius of the search area around the address.
+        Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, default "m"
-        Unit of measurement for the distance (e.g., "m" for meters, "km" for kilometers).
+        Unit of measurement for the distance. Defaults to "m" (meters). One of: "m","km","in","ft","yd","mi"
     release : str, default FSQ_LATEST_RELEASE
-        Foursquare data release version to use.
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
     GeoDataFrame
-        A GeoDataFrame containing Foursquare places data within the specified distance of the address.
+        A GeoDataFrame containing Foursquare places data within the specified bounding box of the address.
     """
     return from_address(address, FSQ_PLACES_PREFIX, FSQ_MAIN_PATH, FSQ_REGION, release, columns, filters, distance, unit)
 
 
-def foursquare_places_from_place(address: str, 
+def foursquare_places_from_place(address: str,
                                     columns: list[str] | None = None, 
                                     filters: FilterStructure = None, 
                                     release: str = FSQ_LATEST_RELEASE) -> GeoDataFrame:
     """
-    Retrieves Foursquare places data for a specific place identified by its address.
+    Retrieves Foursquare places data for a specific place identified by its address or place name.
     
     Parameters
     ----------
@@ -65,14 +69,18 @@ def foursquare_places_from_place(address: str,
     columns : list[str] | None, optional
         Specific columns to retrieve from the dataset. If None, all columns are retrieved.
     filters : FilterStructure, optional
-        Filter criteria to apply to the results.
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, default FSQ_LATEST_RELEASE
-        Foursquare data release version to use.
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
     GeoDataFrame
-        A GeoDataFrame containing Foursquare places data for the specified place.
+        A GeoDataFrame containing Foursquare places data within specified place.
     """
     return from_place(address, FSQ_PLACES_PREFIX, FSQ_MAIN_PATH, FSQ_REGION, release, columns, filters)
 
@@ -91,9 +99,13 @@ def foursquare_places_from_bbox(bbox: tuple[float, float, float, float],
     columns : list[str] | None, optional
         Specific columns to retrieve from the dataset. If None, all columns are retrieved.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, default FSQ_LATEST_RELEASE
-        Foursquare data release version to use.
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------
@@ -103,8 +115,8 @@ def foursquare_places_from_bbox(bbox: tuple[float, float, float, float],
     return from_bbox(bbox, FSQ_PLACES_PREFIX, FSQ_MAIN_PATH, FSQ_REGION, release, columns, filters)
 
 
-def get_categories(columns: list[str] | None = None, 
-                    filters: FilterStructure | None = None, 
+def get_categories(columns: list[str] | None = None,
+                    filters: FilterStructure | None = None,
                     release: str = FSQ_LATEST_RELEASE) -> DataFrame:
     """
     Retrieves Foursquare place categories data.
@@ -114,9 +126,13 @@ def get_categories(columns: list[str] | None = None,
     columns : list[str] | None, optional
         Specific columns to retrieve from the dataset. If None, all columns are retrieved.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
+        Filter criteria to apply to the results. By default, None.
+        Should be a list in the format: ::
+            [("column","==",2)]
+            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
+            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
     release : str, default FSQ_LATEST_RELEASE
-        Foursquare data release version to use.
+        Dataset release version to use. Defaults to the latest version.
         
     Returns
     -------

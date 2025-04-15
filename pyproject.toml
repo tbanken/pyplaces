@@ -68,6 +68,15 @@ dependencies = [
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/pyplaces tests}"
 
+[tool.hatch.envs.docs]
+dependencies = [
+  "sphinx",
+  "sphinx-book-theme",
+  "sphinx-autodoc-typehints",
+  "esbonio",
+  "sphinx-autodoc-typehints",
+]
+
 [tool.coverage.run]
 source_pkgs = ["pyplaces", "tests"]
 branch = true
