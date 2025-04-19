@@ -65,10 +65,11 @@ def overture_places_from_place(address: str,columns: list[str]| None=None,filter
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -91,10 +92,11 @@ def overture_places_from_bbox(bbox: tuple[float,float,float,float],columns: list
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -117,10 +119,11 @@ def overture_buildings_from_address(address: str | tuple[float,float],columns: l
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     distance : float, optional
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
@@ -153,10 +156,11 @@ def overture_buildings_from_place(address: str,columns: list[str]| None=None,fil
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
     building_part : bool, optional
@@ -185,10 +189,11 @@ def overture_buildings_from_bbox(bbox: tuple[float,float,float,float],columns: l
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
     building_part : bool, optional
@@ -217,10 +222,11 @@ def overture_transportation_from_address(address: str | tuple[float,float],colum
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     distance : float, optional
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
@@ -253,10 +259,11 @@ def overture_transportation_from_place(address: str,columns: list[str]| None=Non
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
     connector : bool, optional
@@ -285,10 +292,11 @@ def overture_transportation_from_bbox(bbox: tuple[float,float,float,float],colum
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
     connector : bool, optional
@@ -317,10 +325,11 @@ def overture_addresses_from_address(address: str | tuple[float,float],columns: l
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     distance : float, optional
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
@@ -347,10 +356,11 @@ def overture_addresses_from_place(address: str,columns: list[str]| None=None,fil
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -373,10 +383,11 @@ def overture_addresses_from_bbox(bbox: tuple[float,float,float,float],columns: l
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -401,10 +412,11 @@ def overture_base_from_address(address: str | tuple[float,float],base_type: str,
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     distance : float, optional
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
@@ -436,10 +448,11 @@ def overture_base_from_place(address: str,base_type: str,columns: list[str]| Non
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -467,10 +480,11 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format: ::
+        Should be a list in the format(column,operator,value): ::
             [("column","==",2)]
             [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
             [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
