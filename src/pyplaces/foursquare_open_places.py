@@ -19,7 +19,7 @@ FSQ_FUSED_REGION = 'us-west-2'
 FSQ_FUSED_LATEST_RELEASE = "2025-01-10"
 FSQ_FUSED_PLACES_PREFIX = "places/"
 
-def foursquare_places_from_address(address: str,
+def foursquare_places_from_address(address: str | tuple[float,float],
                                     columns: list[str] | None = None,
                                     filters: FilterStructure | None = None,
                                     distance: float = 500,
@@ -30,8 +30,8 @@ def foursquare_places_from_address(address: str,
     
     Parameters
     ----------
-    address : str
-        The address to search for nearby places.
+    address : str | tuple[float,float]
+        The addres or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to retrieve from the dataset. If None, all columns are retrieved.
     filters : FilterStructure | None, optional

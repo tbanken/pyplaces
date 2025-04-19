@@ -18,14 +18,19 @@ OVERTURE_TRANSPORTATION_SEGMENT_PREFIX = "theme=transportation/type=segment/"
 OVERTURE_TRANSPORTATION_CONNECTOR_PREFIX = "theme=transportation/type=connector/"
 OVERTURE_BASE_PREFIX = "theme=base/type={type}"
 
-def overture_places_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure | None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
+def overture_places_from_address(address: str | tuple[float,float],
+                                columns: list[str]| None = None,
+                                filters: FilterStructure | None = None,
+                                distance: float = 500 ,
+                                unit: str = "m" ,
+                                release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieve places data from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
-    address : str
-        The address to search from
+    address : str | tuple[float,float]
+        The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
@@ -100,14 +105,14 @@ def overture_places_from_bbox(bbox: tuple[float,float,float,float],columns: list
     """
     return from_bbox(bbox,OVERTURE_PLACES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_buildings_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,building_part: bool=False) -> GeoDataFrame:
+def overture_buildings_from_address(address: str | tuple[float,float],columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,building_part: bool=False) -> GeoDataFrame:
     """
     Retrieve buildings data from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
-    address : str
-        The address to search from
+    address : str | tuple[float,float]
+        The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
@@ -200,14 +205,14 @@ def overture_buildings_from_bbox(bbox: tuple[float,float,float,float],columns: l
         prefix = OVERTURE_BUILDINGS_PREFIX
     return from_bbox(bbox,prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_transportation_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,connector:bool=False) -> GeoDataFrame:
+def overture_transportation_from_address(address: str | tuple[float,float],columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,connector:bool=False) -> GeoDataFrame:
     """
     Retrieve transportation data from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
-    address : str
-        The address to search from
+    address : str | tuple[float,float]
+        The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
@@ -300,14 +305,14 @@ def overture_transportation_from_bbox(bbox: tuple[float,float,float,float],colum
         prefix = OVERTURE_TRANSPORTATION_SEGMENT_PREFIX
     return from_bbox(bbox,prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
     
-def overture_addresses_from_address(address: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
+def overture_addresses_from_address(address: str | tuple[float,float],columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieve address data from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
-    address : str
-        The address to search from
+    address : str | tuple[float,float]
+        The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to include in the result, by default None
     filters : FilterStructure | None, optional
@@ -382,14 +387,14 @@ def overture_addresses_from_bbox(bbox: tuple[float,float,float,float],columns: l
     """
     return from_bbox(bbox,OVERTURE_ADDRESSES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_base_from_address(address: str,base_type: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
+def overture_base_from_address(address: str | tuple[float,float],base_type: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieve base data of a specific type from Overture in a bounding box around a specified address.
     
     Parameters
     ----------
-    address : str
-        The address to search from
+    address : str | tuple[float,float]
+        The address or (longitude, latitude) tuple to search for nearby places.
     base_type : str
         The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water".
     columns : list[str] | None, optional
