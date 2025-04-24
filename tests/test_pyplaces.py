@@ -71,16 +71,16 @@ def test_overture_maps():
                             'confidence', 'websites', 'socials', 'emails', 'phones', 'brand','addresses']
     addresses_schema = ['id', 'geometry', 'bbox', 'country', 'postcode', 'street', 'number',
                         'unit', 'address_levels', 'postal_city', 'version', 'sources']
-    buildings_schema = ['id', 'geometry', 'bbox', 'version', 'sources', 'level', 'subtype',
+    buildings_schema = ['id', 'geometry', 'bbox', 'sources', 'level', 'subtype',
                             'class', 'height', 'names', 'has_parts', 'is_underground', 'num_floors',
                             'num_floors_underground', 'min_height', 'min_floor', 'facade_color',
                             'facade_material', 'roof_material', 'roof_shape', 'roof_direction',
-                            'roof_orientation', 'roof_color', 'roof_height','version']
-    buildings_part_schema = ['id', 'geometry', 'bbox', 'version', 'sources', 'level', 'height',
+                            'roof_orientation', 'roof_color', 'roof_height']
+    buildings_part_schema = ['id', 'geometry', 'bbox', 'sources', 'level', 'height',
                                 'names', 'is_underground', 'num_floors', 'num_floors_underground',
                                 'min_height', 'min_floor', 'facade_color', 'facade_material',
                                 'roof_material', 'roof_shape', 'roof_direction', 'roof_orientation',
-                                'roof_color', 'roof_height', 'building_id','version']
+                                'roof_color', 'roof_height', 'building_id']
     transportation_segment_schema = ['id', 'geometry', 'bbox', 'version', 'sources', 'subtype', 'class',
                                             'names', 'connectors', 'routes', 'subclass', 'subclass_rules',
                                             'access_restrictions', 'level_rules', 'destinations',
