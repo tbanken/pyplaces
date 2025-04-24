@@ -75,12 +75,12 @@ def test_overture_maps():
                             'class', 'height', 'names', 'has_parts', 'is_underground', 'num_floors',
                             'num_floors_underground', 'min_height', 'min_floor', 'facade_color',
                             'facade_material', 'roof_material', 'roof_shape', 'roof_direction',
-                            'roof_orientation', 'roof_color', 'roof_height']
+                            'roof_orientation', 'roof_color', 'roof_height','version']
     buildings_part_schema = ['id', 'geometry', 'bbox', 'version', 'sources', 'level', 'height',
                                 'names', 'is_underground', 'num_floors', 'num_floors_underground',
                                 'min_height', 'min_floor', 'facade_color', 'facade_material',
                                 'roof_material', 'roof_shape', 'roof_direction', 'roof_orientation',
-                                'roof_color', 'roof_height', 'building_id']
+                                'roof_color', 'roof_height', 'building_id','version']
     transportation_segment_schema = ['id', 'geometry', 'bbox', 'version', 'sources', 'subtype', 'class',
                                             'names', 'connectors', 'routes', 'subclass', 'subclass_rules',
                                             'access_restrictions', 'level_rules', 'destinations',
