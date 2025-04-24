@@ -8,7 +8,7 @@ from ._io_utils import from_address, from_bbox, from_place
 OVERTURE_MAIN_PATH = 's3://overturemaps-us-west-2/release/{release}/'
 OVERTURE_BUCKET = 'overturemaps-us-west-2'
 OVERTURE_REGION = 'us-west-2'
-OVERTURE_LATEST_RELEASE = "2025-01-22.0"
+OVERTURE_LATEST_RELEASE = "2025-04-23.0"
 
 OVERTURE_PLACES_PREFIX = "theme=places/type=place/"
 OVERTURE_BUILDINGS_PREFIX = "theme=buildings/type=building/"
