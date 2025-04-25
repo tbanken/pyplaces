@@ -54,8 +54,6 @@ FilterGroup: TypeAlias = List[FilterTuple]
 FilterStructure: TypeAlias = List[Union[FilterTuple, FilterGroup]] | FilterTuple
 """FilterStructure represents a list of filtering rules for a DataFrame-like object."""
 
-
-
 def is_list_type(schema, field_name):
     """Check if a field is a list type in the schema."""
     try:
@@ -66,7 +64,6 @@ def is_list_type(schema, field_name):
 
 def evaluate_condition(batch: RecordBatch, col: str, op:str, val:Any):
     field_name = batch[col]
-    # print(field_name.to_pylist())
     if op == "==":
         return equal(field_name, scalar(val))
     elif op == "!=":
@@ -80,7 +77,7 @@ def evaluate_condition(batch: RecordBatch, col: str, op:str, val:Any):
     elif op == "<=":
         return less_equal(field_name, scalar(val))
     elif op == "contains":
-        mask = [val in value if value is not None else False for value in field_name.to_pylist()]
+        mask = [any(v in value for v in val) if value is not None and isinstance(val, list) else (val in value if value is not None else False) for value in field_name.to_pylist()]
         return array(mask)
     else:
         raise UnsupportedOperatorError(f"Unsupported operator: {op}")
@@ -121,9 +118,6 @@ def evaluate_filter_structure(batch: RecordBatch, structure):
     # Must be a list
     if not isinstance(structure, list):
         raise ValueError(f"Invalid filter structure: {structure}")
-    
-    if len(structure) == 0:
-        raise ValueError("Empty filter structure")
     
     # All items at same level are OR'd together
     result_masks = []

@@ -58,9 +58,6 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     except Exception as e:
         raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
     
-    
-    # filter_expr = build_filter_expression(filters,None)
-    
     xmin, ymin, xmax, ymax = bbox
     
     geo_filter_expr = (
@@ -84,9 +81,11 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     def filter_batches(batches):
         for b in batches:
             yield evaluate_filter_structure(b,filters)
-        
-    filtered_batches = filter_batches(non_empty_batches)
     
+    if filters:
+        filtered_batches = filter_batches(non_empty_batches)
+    else:
+        filtered_batches = non_empty_batches
     schema = ds.schema
     metadata_str = decode_bytes(schema.metadata) 
     geo_dict = loads(metadata_str["geo"])
@@ -133,10 +132,6 @@ def read_parquet_arrow(path: str, region: str,
     except Exception as e:
         raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
     
-    
-    # filter_expr = build_filter_expression(filters,None)
-    
-    
     try:
         if columns:
             batches = ds.to_batches(columns=columns)
@@ -152,7 +147,11 @@ def read_parquet_arrow(path: str, region: str,
         for b in batches:
             yield evaluate_filter_structure(b,filters)
         
-    filtered_batches = filter_batches(non_empty_batches)
+    if filters:
+        filtered_batches = filter_batches(non_empty_batches)
+    else:
+        filtered_batches = non_empty_batches
+    
     schema = ds.schema
     reader = RecordBatchReader.from_batches(schema, filtered_batches)
     return reader.read_pandas()
