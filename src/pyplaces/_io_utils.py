@@ -100,7 +100,7 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     geoarrow_schema = schema.set(geometry_field_index, geoarrow_geometry_field)
     reader = RecordBatchReader.from_batches(geoarrow_schema, filtered_batches)
     gdf = GeoDataFrame.from_arrow(reader)
-    gdf = gdf.set_crs("ESPG:4326")
+    gdf.set_crs("EPSG:4326",inplace=True)
     return gdf
 
 def read_parquet_arrow(path: str, region: str, 
