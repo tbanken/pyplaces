@@ -50,7 +50,9 @@ Overture Maps Releases
 +---------------------+----------------------+
 | Release Date        |  Unsupported Themes  |
 +=====================+======================+
-| 2025-03-19.0        |           X          |
+| 2025-04-23.0        |           X          |
++---------------------+----------------------+
+| 2025-03-19.1        |           X          |
 +---------------------+----------------------+
 | 2025-02-19.0        |           X          |
 +---------------------+----------------------+
@@ -94,31 +96,92 @@ Foursquare Open Places Releases
 +-------------+
 | Release Date|
 +=============+
-| 2024-11-19  |
-+-------------+
-| 2024-12-03  |
-+-------------+
-| 2025-01-10  |
-+-------------+
-| 2025-02-06  |
+| 2025-04-08  |
 +-------------+
 | 2025-03-06  |
 +-------------+
-| 2025-04-08  |
+| 2025-02-06  |
 +-------------+
-
+| 2025-01-10  |
++-------------+
+| 2024-12-03  |
++-------------+
+| 2024-11-19  |
++-------------+
 
 Filters
 =======
 
-Filters consist of the column that needs filtering, an equality operator,
-and a value to filter on. 
+Filters consist of the column that needs filtering, an operator,
+and a value to filter on.
 
-Examples of valid filters:
+Basic Filter Structure
+======================
+
+Each filter has three parts:
 
 .. code-block::
 
-    [("column","==",2)]
-    [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
-    [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
+    (column_name, operator, value)
 
+Examples:
+
+* ``("id", "==", 5)`` - Find records where id equals 5
+* ``("score", ">", 90)`` - Find records where score is greater than 90
+* ``("string_list", "contains", "apple")`` - Find records containing "apple" in string_list column
+
+Combining Filters with OR and AND
+=================================
+
+OR Relationships
+~~~~~~~~~~~~~~~~
+
+To find records matching ANY condition, place filters at the same level in a list:
+
+.. code-block::
+
+    [condition1, condition2, condition3]
+
+Example: Find records with id=1 OR id=5
+
+.. code-block::
+
+    [("id", "==", 1), ("id", "==", 5)]
+
+AND Relationships
+~~~~~~~~~~~~~~~~
+
+To find records matching ALL conditions, nest filters in a list:
+
+.. code-block::
+
+    [[condition1, condition2, condition3]]
+
+Example: Find records with score \> 90 AND active=True
+
+.. code-block::
+
+    [[("score", "\>", 90), ("active", "==", True)]]
+
+Building Complex Filters
+-----------------------
+
+Combine AND and OR by nesting lists appropriately:
+
+Example 1: (A OR B) AND C
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block::
+
+    [[("id", "==", 1), ("id", "==", 5)], ("active", "==", True)]
+
+Finds records where (id=1 OR id=5) AND active=True
+
+Example 2: A AND (B OR C)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block::
+
+    [("active", "==", True), [("score", "\>", 90), ("count", "\>", 10)]]
+
+Finds records where active=True AND (score \>90 OR count\>10)

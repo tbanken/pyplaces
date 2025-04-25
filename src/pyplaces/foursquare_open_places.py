@@ -11,13 +11,13 @@ FSQ_BUCKET = 'fsq-os-places-us-east-1'
 FSQ_REGION = 'us-east-1'
 FSQ_PLACES_PREFIX = "places/parquet/"
 FSQ_CATEGORIES_PREFIX = "categories/parquet/"
-FSQ_LATEST_RELEASE = "2025-02-06"
+FSQ_LATEST_RELEASE = "2025-04-08"
 
-FSQ_FUSED_MAIN_PATH = 's3://us-west-2.opendata.source.coop/fused/fsq-os-places/{release}/'
-FSQ_FUSED_BUCKET = 's-west-2.opendata.source.coop'
-FSQ_FUSED_REGION = 'us-west-2'
-FSQ_FUSED_LATEST_RELEASE = "2025-04-08"
-FSQ_FUSED_PLACES_PREFIX = "places/"
+# FSQ_FUSED_MAIN_PATH = 's3://us-west-2.opendata.source.coop/fused/fsq-os-places/{release}/'
+# FSQ_FUSED_BUCKET = 's-west-2.opendata.source.coop'
+# FSQ_FUSED_REGION = 'us-west-2'
+# FSQ_FUSED_LATEST_RELEASE = "2025-04-08"
+# FSQ_FUSED_PLACES_PREFIX = "places/"
 
 def foursquare_places_from_address(address: str | tuple[float,float],
                                     columns: list[str] | None = None,
@@ -36,11 +36,8 @@ def foursquare_places_from_address(address: str | tuple[float,float],
         Specific columns to retrieve from the dataset. If None, all columns are retrieved.
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format(column,operator,value): ::
-            [("column","==",2)]
-            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
-            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
+        Should be a list in the format(column,operator,value)
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     distance : float, default 500
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, default "m"
@@ -71,11 +68,8 @@ def foursquare_places_from_place(address: str,
         Specific columns to retrieve from the dataset. If None, all columns are retrieved.
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format(column,operator,value): ::
-            [("column","==",2)]
-            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
-            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
+        Should be a list in the format(column,operator,value)
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, default FSQ_LATEST_RELEASE
         Dataset release version to use. Defaults to the latest version.
         
@@ -102,11 +96,8 @@ def foursquare_places_from_bbox(bbox: tuple[float, float, float, float],
         Specific columns to retrieve from the dataset. If None, all columns are retrieved.
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format(column,operator,value): ::
-            [("column","==",2)]
-            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
-            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
+        Should be a list in the format(column,operator,value)
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, default FSQ_LATEST_RELEASE
         Dataset release version to use. Defaults to the latest version.
         
@@ -130,11 +121,8 @@ def get_categories(columns: list[str] | None = None,
         Specific columns to retrieve from the dataset. If None, all columns are retrieved.
     filters : FilterStructure | None, optional
         Filter criteria to apply to the results. By default, None.
-        Should be a list in the format(column,operator,value): ::
-            [("column","==",2)]
-            [("column1","==",2),("column2","==",0.9)] # Filters in the same list will be OR'd together
-            [("column1","==",2),[(("column2","==",0.9))]] # Filters in a nested list will be AND'd together
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","is_nan", "is_null", "is_valid", "isin"
+        Should be a list in the format(column,operator,value)
+        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, default FSQ_LATEST_RELEASE
         Dataset release version to use. Defaults to the latest version.
         
