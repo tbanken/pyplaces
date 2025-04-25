@@ -13,12 +13,12 @@
 project = 'pyplaces'
 copyright = '2025, Theodore Banken'
 author = 'Theodore Banken'
-release = '0.1.2'
-
+release = '0.2.0'
+#TODO dynamically get release
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc','sphinx_autodoc_typehints']
+extensions = ['sphinx.ext.autodoc','sphinx_autodoc_typehints','nbsphinx']
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -27,7 +27,7 @@ exclude_patterns = []
 #     "home_page_in_toc": True,
 #     "collapse_navbar": True,
 # }
-
+nbsphinx_execute = 'never'
 
 
 # -- Options for HTML output -------------------------------------------------
