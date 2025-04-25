@@ -1,9 +1,6 @@
 """I/O utility functions for reading data."""
 
 from __future__ import annotations
-
-import functools
-import operator
 from json import loads
 import sys
 
@@ -13,7 +10,7 @@ from pyarrow.dataset import dataset
 from pyarrow.fs import S3FileSystem
 from geopandas import GeoDataFrame
 
-from ._utils import build_filter_expression, catch_column_filter_error, FilterStructure
+from ._utils import evaluate_filter_structure, catch_column_filter_error, FilterStructure
 from ._geo_utils import geocode_place_to_bbox, geocode_point_to_bbox
 from ._errors import S3ReadError
 
@@ -52,18 +49,6 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     GeoDataFrame
         Filtered geodataframe
     """
-    filter_expr = build_filter_expression(filters)
-    
-    xmin, ymin, xmax, ymax = bbox
-    
-    geo_filter_expr = (
-        (field("bbox", "xmin") < xmax)
-        & (field("bbox", "xmax") > xmin)
-        & (field("bbox", "ymin") < ymax)
-        & (field("bbox", "ymax") > ymin)
-    )
-    filter_ls = list(filter(lambda x: x is not None, [geo_filter_expr, filter_expr]))
-    combined_filter = functools.reduce(operator.and_, filter_ls)
     
     clean_path = path.replace("s3://", "")
     try:
@@ -73,16 +58,34 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     except Exception as e:
         raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
     
+    
+    # filter_expr = build_filter_expression(filters,None)
+    
+    xmin, ymin, xmax, ymax = bbox
+    
+    geo_filter_expr = (
+        (field("bbox", "xmin") < xmax)
+        & (field("bbox", "xmax") > xmin)
+        & (field("bbox", "ymin") < ymax)
+        & (field("bbox", "ymax") > ymin)
+    )
+    
     try:
         if columns:
-            batches = ds.to_batches(columns=columns, filter=combined_filter)
+            batches = ds.to_batches(columns=columns, filter=geo_filter_expr)
         else:
-            batches = ds.to_batches(filter=combined_filter)
+            batches = ds.to_batches(filter=geo_filter_expr)
     except Exception as e:
         exc_info = sys.exc_info()[0]
         catch_column_filter_error(exc_info,e)
-    
+        
     non_empty_batches = (b for b in batches if b.num_rows > 0)
+    
+    def filter_batches(batches):
+        for b in batches:
+            yield evaluate_filter_structure(b,filters)
+        
+    filtered_batches = filter_batches(non_empty_batches)
     
     schema = ds.schema
     metadata_str = decode_bytes(schema.metadata) 
@@ -96,7 +99,7 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     )
 
     geoarrow_schema = schema.set(geometry_field_index, geoarrow_geometry_field)
-    reader = RecordBatchReader.from_batches(geoarrow_schema, non_empty_batches)
+    reader = RecordBatchReader.from_batches(geoarrow_schema, filtered_batches)
 
     return GeoDataFrame.from_arrow(reader)
 
@@ -122,25 +125,36 @@ def read_parquet_arrow(path: str, region: str,
     GeoDataFrame
         Filtered dataframe
     """
-    filter_expr = build_filter_expression(filters)
     clean_path = path.replace("s3://", "")
-    ds = dataset(
-        clean_path, filesystem=S3FileSystem(anonymous=True, region=region)
-    )
     try:
-        if columns and filter_expr:
-            batches = ds.to_batches(columns=columns, filter=filter_expr)
-        elif filter_expr:
-            batches = ds.to_batches(filter=filter_expr)
-        else:
+        ds = dataset(
+            clean_path, filesystem=S3FileSystem(anonymous=True, region=region)
+        )
+    except Exception as e:
+        raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
+    
+    
+    # filter_expr = build_filter_expression(filters,None)
+    
+    
+    try:
+        if columns:
             batches = ds.to_batches(columns=columns)
+        else:
+            batches = ds.to_batches()
     except Exception as e:
         exc_info = sys.exc_info()[0]
         catch_column_filter_error(exc_info,e)
-    
+        
     non_empty_batches = (b for b in batches if b.num_rows > 0)
+    
+    def filter_batches(batches):
+        for b in batches:
+            yield evaluate_filter_structure(b,filters)
+        
+    filtered_batches = filter_batches(non_empty_batches)
     schema = ds.schema
-    reader = RecordBatchReader.from_batches(schema, non_empty_batches)
+    reader = RecordBatchReader.from_batches(schema, filtered_batches)
     return reader.read_pandas()
 
 def get_gdf_from_bbox(release:str, bbox:tuple[float,float,float,float], columns:list[str], filters: FilterStructure, prefix: str, path: str, region: str):
