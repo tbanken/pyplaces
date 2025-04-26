@@ -12,6 +12,8 @@ pyplaces |release| documentation
 Overture Maps and Foursquare Open Places. Overture Maps provides support to get data from multiple versions of the dataset for all of its themes. 
 Foursquare Open Places is primarily point of interest data which is also supports fetching multiple versions of the dataset.
 
+**The available datasets are: Foursquare Places and Categories, Overture Places, Addresses, Transportation, Buildings, and Base layers.**
+
 Quickstart
 **********
 
@@ -41,6 +43,12 @@ Additionally, you can:
 * Filter on columns using the \(column,operator,value\) syntax (see support for this syntax here)
 * Get data from past releases(see support for this here)
 
+Examples
+========
+
+.. nbgallery::
+   notebooks/example1
+   
 Most, if not all, of the functions follow the same type of workflow.
 
 User Reference
@@ -67,8 +75,9 @@ Future Support
 * basic network analysis for transportation data
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    usage
+   notebooks/example1
 

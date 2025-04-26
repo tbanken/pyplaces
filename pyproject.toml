@@ -75,6 +75,7 @@ dependencies = [
   "sphinx-autodoc-typehints",
   "esbonio",
   "sphinx-autodoc-typehints",
+  "nbsphinx",
 ]
 
 [tool.coverage.run]
