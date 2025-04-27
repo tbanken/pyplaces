@@ -39,9 +39,10 @@ def test_foursquare_places():
         fsq.foursquare_places_from_place(user_provided_invalid["address"])
         #assert invalid bbox
         fsq.foursquare_places_from_bbox(user_provided_invalid["bbox"])
-    with pytest.raises(PyArrowError):
+    with pytest.raises(KeyError):
         #assert invalid column
         fsq.foursquare_places_from_address(user_provided_valid["address"],user_optional_invalid["columns"])
+    with pytest.raises(PyArrowError):
         #assert invalid field
         fsq.foursquare_places_from_address(user_provided_valid["address"],filters=user_optional_invalid["filters_invalid_field"])
         #assert invalid value

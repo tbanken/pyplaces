@@ -98,8 +98,14 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     reader = RecordBatchReader.from_batches(geoarrow_schema, filtered_batches)
     gdf = GeoDataFrame.from_arrow(reader)
     gdf.set_crs("EPSG:4326",inplace=True)
-    if columns:
-        gdf = gdf[columns]
+    
+    try:
+        if columns:
+            gdf = gdf[columns]
+    except Exception as e:
+        exc_info = sys.exc_info()[0]
+        catch_column_filter_error(exc_info,e)
+    
     return gdf
 
 def read_parquet_arrow(path: str, region: str, 
