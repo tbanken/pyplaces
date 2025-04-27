@@ -68,10 +68,7 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     )
     
     try:
-        if columns:
-            batches = ds.to_batches(columns=columns, filter=geo_filter_expr)
-        else:
-            batches = ds.to_batches(filter=geo_filter_expr)
+        batches = ds.to_batches(filter=geo_filter_expr)
     except Exception as e:
         exc_info = sys.exc_info()[0]
         catch_column_filter_error(exc_info,e)
@@ -101,6 +98,8 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     reader = RecordBatchReader.from_batches(geoarrow_schema, filtered_batches)
     gdf = GeoDataFrame.from_arrow(reader)
     gdf.set_crs("EPSG:4326",inplace=True)
+    if columns:
+        gdf = gdf[columns]
     return gdf
 
 def read_parquet_arrow(path: str, region: str, 
@@ -134,10 +133,7 @@ def read_parquet_arrow(path: str, region: str,
         raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
     
     try:
-        if columns:
-            batches = ds.to_batches(columns=columns)
-        else:
-            batches = ds.to_batches()
+        batches = ds.to_batches()
     except Exception as e:
         exc_info = sys.exc_info()[0]
         catch_column_filter_error(exc_info,e)
@@ -155,7 +151,10 @@ def read_parquet_arrow(path: str, region: str,
     
     schema = ds.schema
     reader = RecordBatchReader.from_batches(schema, filtered_batches)
-    return reader.read_pandas()
+    df = reader.read_pandas()
+    if columns:
+        df = df[columns]
+    return df
 
 def get_gdf_from_bbox(release:str, bbox:tuple[float,float,float,float], columns:list[str], filters: FilterStructure, prefix: str, path: str, region: str):
     """Helper function to get a geodataframe from a bounding box."""
