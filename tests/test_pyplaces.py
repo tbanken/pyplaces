@@ -30,7 +30,8 @@ def test_foursquare_places():
         fsq.foursquare_places_from_address(user_provided_valid["address"],release=user_optional_invalid["release"])
         #assert invalid unit
         fsq.foursquare_places_from_address(user_provided_valid["address"],unit=user_optional_invalid["unit"])
-        
+        #assert invalid value
+        fsq.foursquare_places_from_address(user_provided_valid["address"],filters=user_optional_invalid["filters_invalid_value"])
         
         #TODO not sure about these
         #assert invalid point
@@ -42,11 +43,8 @@ def test_foursquare_places():
     with pytest.raises(KeyError):
         #assert invalid column
         fsq.foursquare_places_from_address(user_provided_valid["address"],user_optional_invalid["columns"])
-    with pytest.raises(PyArrowError):
         #assert invalid field
         fsq.foursquare_places_from_address(user_provided_valid["address"],filters=user_optional_invalid["filters_invalid_field"])
-        #assert invalid value
-        fsq.foursquare_places_from_address(user_provided_valid["address"],filters=user_optional_invalid["filters_invalid_value"])
     # with pytest.raises(UnsupportedOperatorError):
     #     #assert invalid operator
     #     fsq.foursquare_places_from_address(user_provided_valid["address"],filters=user_optional_invalid["filters_invalid_op"])

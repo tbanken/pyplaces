@@ -61,7 +61,7 @@ def is_list_type(schema, field_name):
         return is_list(field_type)
     except (KeyError, AttributeError):
         return False
-
+    
 def evaluate_condition(batch: RecordBatch, col: str, op:str, val:Any):
     field_name = batch[col]
     if op == "==":
@@ -177,7 +177,7 @@ def catch_column_filter_error(exc_type: BaseException,error: Exception) -> None:
     elif exc_type.__name__ == "ArrowInvalid":
         match = re.search(r"FieldRef\.Name\(([^)]+)\)", error_message)
         name = match.group(1)
-        raise PyArrowError(f"Invalid column name:\"{name}\"") from error
+        raise KeyError(f"Invalid column name:\"{name}\"") from error
     elif exc_type.__name__ =="ArrowNotImplementedError":
         match = re.search(r"\(([^)]+)\)", error_message)
         first_value,last_value = match.group(1).split(",")
