@@ -103,8 +103,7 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
         if columns:
             gdf = gdf[columns]
     except Exception as e:
-        exc_info = sys.exc_info()[0]
-        catch_column_filter_error(exc_info,e)
+        raise e
     
     return gdf
 
