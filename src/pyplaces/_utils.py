@@ -10,10 +10,10 @@ from typing import Union, List, Tuple, Any, Literal
 from typing_extensions import TypeAlias
 
 from pyarrow.compute import equal,not_equal,greater,less,greater_equal,less_equal,is_in,and_,or_
-from pyarrow.types import is_list
+from pyarrow.types import is_struct
 from pyarrow import array, scalar, RecordBatch
 
-from ._errors import UnsupportedOperatorError, PyArrowError
+from ._errors import UnsupportedOperatorError
 
 def run_before_decorator(before_func):
     """Returns a decorator that runs the specified `before_func` before the wrapped function."""
@@ -54,30 +54,73 @@ FilterGroup: TypeAlias = List[FilterTuple]
 FilterStructure: TypeAlias = List[Union[FilterTuple, FilterGroup]] | FilterTuple
 """FilterStructure represents a list of filtering rules for a DataFrame-like object."""
 
-def is_list_type(schema, field_name):
-    """Check if a field is a list type in the schema."""
-    try:
-        field_type = schema.field(field_name).type
-        return is_list(field_type)
-    except (KeyError, AttributeError):
-        return False
     
+def parse_field_path(field_spec):
+    """
+    Parse a field specification that contains nested dictionary access.
+    
+    Args:
+        field_spec: Field specification (e.g., "categories.primary" or "metadata.tags.name")
+        
+    Returns:
+        Tuple of (base_column, keys)
+    """
+    path_parts = field_spec.split('.')
+    base_column = path_parts[0]
+    keys = path_parts[1:] if len(path_parts) > 1 else []
+    
+    return base_column, keys
+
+def extract_nested_value(array_column, keys):
+    """
+    Extract nested values from a dictionary/struct column.
+    
+    Args:
+        array_column: PyArrow Array representing a column
+        keys: List of keys to traverse in the nested dictionaries
+        
+    Returns:
+        PyArrow Array with the extracted values
+    """
+    current = array_column
+    
+    for key in keys:
+        # Extract the field from the struct
+        if is_struct(current.type):
+            current = current.field(key)
+        else:
+            raise ValueError(f"Cannot access field '{key}' in non-struct column")
+    
+    return current
+
+
+
+
 def evaluate_condition(batch: RecordBatch, col: str, op:str, val:Any):
-    field_name = batch[col]
+    
+    if '.' in col:
+        base_column, keys = parse_field_path(col)
+        # Extract the field value using the path
+        if base_column in batch.column_names:
+            col_values = extract_nested_value(batch[base_column], keys)
+        else:
+            raise ValueError(f"Column '{base_column}' not found in dataset")
+    else:
+        col_values = batch[col]
     if op == "==":
-        return equal(field_name, scalar(val))
+        return equal(col_values, scalar(val))
     elif op == "!=":
-        return not_equal(field_name, scalar(val))
+        return not_equal(col_values, scalar(val))
     elif op == ">":
-        return greater(field_name, scalar(val))
+        return greater(col_values, scalar(val))
     elif op == "<":
-        return less(field_name, scalar(val))
+        return less(col_values, scalar(val))
     elif op == ">=":
-        return greater_equal(field_name, scalar(val))
+        return greater_equal(col_values, scalar(val))
     elif op == "<=":
-        return less_equal(field_name, scalar(val))
+        return less_equal(col_values, scalar(val))
     elif op == "contains":
-        mask = [any(v in value for v in val) if value is not None and isinstance(val, list) else (val in value if value is not None else False) for value in field_name.to_pylist()]
+        mask = [any(v in value for v in val) if value is not None and isinstance(val, list) else (val in value if value is not None else False) for value in col_values.to_pylist()]
         return array(mask)
     else:
         raise UnsupportedOperatorError(f"Unsupported operator: {op}")
