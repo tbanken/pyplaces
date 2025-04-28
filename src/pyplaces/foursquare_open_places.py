@@ -164,8 +164,6 @@ def _check_release(release: str):
     if release not in folders:
         raise ValueError(f"Invalid release: {release}")
     
-wrap_functions_with_release(__name__, _check_release)
-    
         # from pyarrow.parquet import ParquetFile
     # from pyarrow.fs import S3FileSystem
     # from rapidfuzz import process
@@ -205,3 +203,5 @@ wrap_functions_with_release(__name__, _check_release)
 
 
 __all__ = ["foursquare_places_from_address", "foursquare_places_from_bbox", "foursquare_places_from_place", "get_categories"]
+
+wrap_functions_with_release(__name__, _check_release,__all__)

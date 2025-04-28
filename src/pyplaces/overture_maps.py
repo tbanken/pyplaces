@@ -494,9 +494,11 @@ def _check_release(release):
     if release not in folders:
         raise ValueError(f"Invalid release:{release}")
     
-wrap_functions_with_release(__name__, _check_release)
+
 
 __all__ = ["overture_addresses_from_address","overture_addresses_from_bbox","overture_addresses_from_place","overture_base_from_address", 
             "overture_base_from_bbox","overture_base_from_place","overture_buildings_from_address","overture_buildings_from_bbox",
             "overture_buildings_from_place","overture_places_from_address","overture_places_from_bbox","overture_places_from_place",
-            "overture_transportation_from_address","overture_transportation_from_bbox","overture_transportation_from_place"]
+            "overture_transportation_from_address","overture_transportation_from_bbox","overture_transportation_from_place","get_schema"]
+
+wrap_functions_with_release(__name__, _check_release,__all__)
