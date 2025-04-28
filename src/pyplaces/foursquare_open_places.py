@@ -3,7 +3,7 @@ from importlib import resources
 from geopandas import GeoDataFrame
 from pandas import DataFrame
 from ._utils import FilterStructure, wrap_functions_with_release
-from ._io_utils import from_address, from_bbox, from_place, read_parquet_arrow
+from ._io_utils import from_address, from_bbox, from_place, read_parquet_arrow, _schema_from_dataset
 
 #TODO latest release reads from text file
 FSQ_MAIN_PATH = 's3://fsq-os-places-us-east-1/release/dt={release}/'
@@ -164,6 +164,29 @@ def _check_release(release: str):
     if release not in folders:
         raise ValueError(f"Invalid release: {release}")
     
+def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE):
+    """
+    Get Arrow schema for the given dataset. Set categories to True if you want to get the categories instead of the places schema.
+
+    Parameters
+    ----------
+        connector : bool, optional
+            Whether to get categories schema, by default False.
+        release : str, optional 
+            Release version to use, defaults to the latest version.
+    Returns
+    -------
+    str
+        PyArrow schema of dataset
+    """
+    path = FSQ_MAIN_PATH.format(release=release).replace("s3://", "") 
+    if categories:
+        path = path + FSQ_CATEGORIES_PREFIX
+    else:
+        path = path + FSQ_PLACES_PREFIX
+    schema = _schema_from_dataset(path,FSQ_REGION)
+    return schema.to_string()
+    
         # from pyarrow.parquet import ParquetFile
     # from pyarrow.fs import S3FileSystem
     # from rapidfuzz import process
@@ -202,6 +225,6 @@ def _check_release(release: str):
     #     print("No relevant categories found.")
 
 
-__all__ = ["foursquare_places_from_address", "foursquare_places_from_bbox", "foursquare_places_from_place", "get_categories"]
+__all__ = ["foursquare_places_from_address", "foursquare_places_from_bbox", "foursquare_places_from_place", "get_categories","get_schema"]
 
 wrap_functions_with_release(__name__, _check_release,__all__)

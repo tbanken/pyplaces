@@ -14,6 +14,22 @@ from ._utils import evaluate_filter_structure, catch_column_filter_error, Filter
 from ._geo_utils import geocode_place_to_bbox, geocode_point_to_bbox
 from ._errors import S3ReadError
 
+def _schema_from_dataset(s3_path,region):
+    """
+    List all parquet files in an S3 path and read the schema from the first one.
+    
+    Args:
+        s3_path (str): S3 path to directory containing parquet files
+        (e.g., 's3://bucket-name/path/to/dataset/')
+    
+    Returns:
+        Schema: PyArrow schema from the first parquet file
+    """
+    ds = dataset(
+            s3_path, filesystem=S3FileSystem(anonymous=True, region=region)
+        )
+    return ds.schema
+
 def decode_bytes(obj):
     """Recursively decode byte strings in nested structures."""
     if isinstance(obj, dict):

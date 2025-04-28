@@ -2,7 +2,7 @@
 from geopandas import GeoDataFrame
 from importlib import resources
 from ._utils import FilterStructure, wrap_functions_with_release
-from ._io_utils import from_address, from_bbox, from_place
+from ._io_utils import from_address, from_bbox, from_place, _schema_from_dataset
 
 #TODO latest release reads from text file
 OVERTURE_MAIN_PATH = 's3://overturemaps-us-west-2/release/{release}/'
@@ -452,6 +452,63 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
     _check_base_type(base_type)
     complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
     return from_bbox(bbox,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
+
+def get_schema(dataset_name,connector=False,building_part=False,base_type=None,release: str=OVERTURE_LATEST_RELEASE):
+    """
+    Get Arrow schema for the given dataset.
+
+    Parameters
+    ----------
+        dataset_name : str
+            Name of the dataset to get the schema of, must be one of \"buildings\",\"transportation\",\"base\",\"places\",\"addresses\"
+        connector : bool, optional
+            Whether to retrieve connector schema, by default False.
+        building_part : bool, optional 
+            Whether to retrieve building_part schema, by default False.
+        base_type : str, optional 
+            Which base type schema to retrive, by default None.
+        release : str, optional 
+            Release version to use, defaults to the latest version.
+    Returns
+    -------
+    str
+        PyArrow schema of dataset
+    """
+    datasets = ["buildings","transportation","base","places","addresses"]
+    with resources.files("pyplaces").joinpath("releases/overture/base_types.txt").open( "r",encoding="utf-8-sig") as f:
+        base_types = [line.replace("type=", "").strip(" \n/") for line in f]
+    if dataset_name not in datasets:
+        raise KeyError(f"No dataset: {dataset_name} found")
+    elif connector and dataset_name != "transportation":
+        raise KeyError("Dataset must be \"transportation\" to get connector schema")
+    elif building_part and dataset_name != "buildings":
+        raise KeyError("Dataset must be \"buildings\" to get building_part schema")
+    elif base_type and dataset_name != "base":
+        raise KeyError(f"Dataset must be \"base\" to get {base_type} schema")
+    elif base_type and base_type not in base_types:
+        raise KeyError(f"No base type:{dataset_name} found")
+    
+    path = OVERTURE_MAIN_PATH.format(release=release).replace("s3://", "") 
+    if dataset_name == "places":
+        path = path + OVERTURE_PLACES_PREFIX
+    elif dataset_name == "addresses":
+        path = path + OVERTURE_ADDRESSES_PREFIX
+    elif dataset_name == "buildings":
+        if building_part:
+            path = path + OVERTURE_BUILDINGS_PART_PREFIX
+        else:
+            path = path + OVERTURE_BUILDINGS_PREFIX
+    elif dataset_name == "base":
+        path = path + OVERTURE_BASE_PREFIX.format(type=base_type)
+    elif dataset_name == "transportation":
+        if connector:
+            path = path + OVERTURE_TRANSPORTATION_CONNECTOR_PREFIX
+        else:
+            path = path + OVERTURE_TRANSPORTATION_SEGMENT_PREFIX
+    # print(path)
+    schema = _schema_from_dataset(path,OVERTURE_REGION)
+    return schema.to_string()
+
 
 
 
