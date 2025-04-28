@@ -34,13 +34,13 @@ def run_before_decorator(before_func):
         return wrapper
     return decorator
 
-def wrap_functions_with_release(module_name, before_func):
+def wrap_functions_with_release(module_name, before_func,func_list):
     """Dynamically wraps all functions with 'release' parameter in the given module."""
     module = sys.modules[module_name]
     
     for name in dir(module):
         attr = getattr(module, name)
-        if callable(attr) and name != before_func.__name__:
+        if callable(attr) and name != before_func.__name__ and name in func_list:
             sig = inspect.signature(attr)
             if "release" in sig.parameters:  # Wrap only functions with "release"
                 setattr(module, name, run_before_decorator(before_func)(attr))
@@ -92,9 +92,6 @@ def extract_nested_value(array_column, keys):
             raise ValueError(f"Cannot access field '{key}' in non-struct column")
     
     return current
-
-
-
 
 def evaluate_condition(batch: RecordBatch, col: str, op:str, val:Any):
     
