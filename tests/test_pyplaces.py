@@ -1,6 +1,6 @@
 import pytest
 from pyplaces import foursquare_open_places as fsq, overture_maps as ov
-from pyplaces._errors import PyArrowError,UnsupportedOperatorError
+from pyplaces._errors import UnsupportedOperatorError
 
 
 user_optional_valid = {"columns":["confidence","names"],"filters":("confidence",">",0.9),
