@@ -2,7 +2,8 @@
 from geopandas import GeoDataFrame
 from importlib import resources
 from ._utils import FilterStructure, wrap_functions_with_release
-from ._io_utils import from_address, from_bbox, from_place, _schema_from_dataset
+from ._io_utils import from_address, from_bbox, from_place, schema_from_dataset
+
 
 #TODO latest release reads from text file
 OVERTURE_MAIN_PATH = 's3://overturemaps-us-west-2/release/{release}/'

@@ -2,8 +2,11 @@
 from importlib import resources
 from geopandas import GeoDataFrame
 from pandas import DataFrame
+from typing import Union
+from pyarrow import Schema
 from ._utils import FilterStructure, wrap_functions_with_release
-from ._io_utils import from_address, from_bbox, from_place, read_parquet_arrow, _schema_from_dataset
+from ._io_utils import from_address, from_bbox, from_place, read_parquet_arrow, schema_from_dataset
+from ._category_matcher import CategoryFinder
 
 #TODO latest release reads from text file
 FSQ_MAIN_PATH = 's3://fsq-os-places-us-east-1/release/dt={release}/'
