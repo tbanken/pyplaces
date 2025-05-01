@@ -1,7 +1,8 @@
 """Functions to fetch  geoparquet data from Overture Maps on AWS"""
+from importlib import resources
+import uuid
 from geopandas import GeoDataFrame
 from importlib import resources
-from pyarrow import Schema
 from ._utils import FilterStructure, wrap_functions_with_release
 from ._io_utils import from_address, from_bbox, from_place, schema_from_dataset
 
@@ -19,6 +20,8 @@ OVERTURE_ADDRESSES_PREFIX = "theme=addresses/type=address/"
 OVERTURE_TRANSPORTATION_SEGMENT_PREFIX = "theme=transportation/type=segment/"
 OVERTURE_TRANSPORTATION_CONNECTOR_PREFIX = "theme=transportation/type=connector/"
 OVERTURE_BASE_PREFIX = "theme=base/type={type}"
+
+OVERTURE_CATEGORIES_URL = "https://raw.githubusercontent.com/OvertureMaps/schema/refs/heads/main/docs/schema/concepts/by-theme/places/overture_categories.csv"
 
 def overture_places_from_address(address: str | tuple[float,float],
                                 columns: list[str]| None = None,
@@ -455,7 +458,9 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
     complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
     return from_bbox(bbox,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def get_schema(dataset_name,connector=False,building_part=False,base_type=None,release: str=OVERTURE_LATEST_RELEASE) -> str:
+def get_schema(dataset_name : str,
+                connector : bool = False,
+                building_part : bool = False,base_type : str = None,release: str = OVERTURE_LATEST_RELEASE):
     """
     Get Arrow schema for the given dataset.
 
