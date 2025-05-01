@@ -1,6 +1,7 @@
 """Functions to fetch  geoparquet data from Overture Maps on AWS"""
 from geopandas import GeoDataFrame
 from importlib import resources
+from pyarrow import Schema
 from ._utils import FilterStructure, wrap_functions_with_release
 from ._io_utils import from_address, from_bbox, from_place, schema_from_dataset
 
@@ -454,7 +455,7 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
     complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
     return from_bbox(bbox,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def get_schema(dataset_name,connector=False,building_part=False,base_type=None,release: str=OVERTURE_LATEST_RELEASE):
+def get_schema(dataset_name,connector=False,building_part=False,base_type=None,release: str=OVERTURE_LATEST_RELEASE) -> str:
     """
     Get Arrow schema for the given dataset.
 
@@ -473,7 +474,7 @@ def get_schema(dataset_name,connector=False,building_part=False,base_type=None,r
     Returns
     -------
     str
-        PyArrow schema of dataset
+        String representation of PyArrow schema of dataset
     """
     datasets = ["buildings","transportation","base","places","addresses"]
     with resources.files("pyplaces").joinpath("releases/overture/base_types.txt").open( "r",encoding="utf-8-sig") as f:
@@ -507,7 +508,7 @@ def get_schema(dataset_name,connector=False,building_part=False,base_type=None,r
         else:
             path = path + OVERTURE_TRANSPORTATION_SEGMENT_PREFIX
     # print(path)
-    schema = _schema_from_dataset(path,OVERTURE_REGION)
+    schema = schema_from_dataset(path,OVERTURE_REGION)
     return schema.to_string()
 
 

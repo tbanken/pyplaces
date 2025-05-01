@@ -2,8 +2,6 @@
 from importlib import resources
 from geopandas import GeoDataFrame
 from pandas import DataFrame
-from typing import Union
-from pyarrow import Schema
 from ._utils import FilterStructure, wrap_functions_with_release
 from ._io_utils import from_address, from_bbox, from_place, read_parquet_arrow, schema_from_dataset
 
@@ -167,7 +165,7 @@ def _check_release(release: str):
     if release not in folders:
         raise ValueError(f"Invalid release: {release}")
     
-def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE):
+def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> str:
     """
     Get Arrow schema for the given dataset. Set categories to True if you want to get the categories instead of the places schema.
 
@@ -180,52 +178,15 @@ def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE):
     Returns
     -------
     str
-        PyArrow schema of dataset
+        String representation of PyArrow schema of dataset
     """
     path = FSQ_MAIN_PATH.format(release=release).replace("s3://", "") 
     if categories:
         path = path + FSQ_CATEGORIES_PREFIX
     else:
         path = path + FSQ_PLACES_PREFIX
-    schema = _schema_from_dataset(path,FSQ_REGION)
+    schema = schema_from_dataset(path,FSQ_REGION)
     return schema.to_string()
-    
-        # from pyarrow.parquet import ParquetFile
-    # from pyarrow.fs import S3FileSystem
-    # from rapidfuzz import process
-
-    # # S3 Configuration
-    # S3_BUCKET = "your-bucket-name"
-    # S3_KEY = "path/to/categories.parquet"
-
-
-    # def find_matching_foursquare_categories(user_input, s3_path, threshold=60, batch_size=1000):
-    #     """Streams the Parquet file in chunks and performs fuzzy matching"""
-    #     s3_filesystem = S3FileSystem()
-    #     # Open the Parquet file
-    #     parquet_file = ParquetFile(s3_path, filesystem=s3_filesystem)
-        
-    #     # Read in chunks
-    #     for batch in parquet_file.iter_batches(batch_size, columns=["category_name", "category_id"]):
-    #         df = batch.to_pandas()  # Convert batch to Pandas DataFrame
-    #         categories_dict = dict(zip(df["category_name"], df["category_id"]))  # Convert to dict
-            
-    #         # Perform fuzzy matching
-    #         matches = process.extract(user_input, categories_dict.keys(), limit=5, score_cutoff=threshold)
-    #         if matches:
-    #             return {name: categories_dict[name] for name, score, _ in matches}
-        
-    #     return {}  # Return empty dict if no matches
-
-    # # Example usage
-    # user_query = input("Enter category: ").strip()
-    # s3_path = f"{S3_BUCKET}/{S3_KEY}"
-    # matching_categories = find_matching_categories(user_query, s3_path, s3_filesystem)
-
-    # if matching_categories:
-    #     print("Matched Categories and IDs:", matching_categories)
-    # else:
-    #     print("No relevant categories found.")
 
 
 __all__ = ["foursquare_places_from_address", "foursquare_places_from_bbox", "foursquare_places_from_place", "get_categories","get_schema"]
