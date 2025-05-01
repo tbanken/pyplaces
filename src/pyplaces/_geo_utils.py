@@ -34,13 +34,11 @@ def point_buffer(lon: float, lat: float, radius_m: float) -> Polygon:
     geod = Geod(ellps='WGS84')
     num_vtxs = 64
     
-    # Generate equally spaced angles in degrees from 360 to 0
     angles = []
     for i in range(num_vtxs):
         angle = 360 - (i * 360 / num_vtxs)
         angles.append(angle)
     
-    # Generate the coordinates for each vertex of the buffer
     coords = []
     for angle in angles:
         # Calculate a single point - geod.fwd returns lon, lat, az for a single point
@@ -84,7 +82,6 @@ def geocode_place_to_bbox(address: str):
     -----------
     address : str
         Place name or address
-        
     Returns:
     --------
     tuple

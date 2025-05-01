@@ -9,25 +9,25 @@ import re
 from typing import Union, List, Tuple, Any, Literal
 from typing_extensions import TypeAlias
 
-from pyarrow.compute import equal,not_equal,greater,less,greater_equal,less_equal,is_in,and_,or_
+from pyarrow.compute import equal,not_equal,greater,less,greater_equal,less_equal,and_,or_
 from pyarrow.types import is_struct
 from pyarrow import array, scalar, RecordBatch
 
 from ._errors import UnsupportedOperatorError
 
-def run_before_decorator(before_func):
+def _run_before_decorator(before_func):
     """Returns a decorator that runs the specified `before_func` before the wrapped function."""
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            # Extract 'release' argument dynamically
+            # Extract 'release' argument
             sig = inspect.signature(func)
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
 
             if "release" in bound_args.arguments:
                 release_value = bound_args.arguments["release"]
-                before_func(release_value)  # Call the module-specific before function
+                before_func(release_value)
 
             return func(*args, **kwargs)
 
@@ -40,10 +40,10 @@ def wrap_functions_with_release(module_name, before_func,func_list):
     
     for name in dir(module):
         attr = getattr(module, name)
-        if callable(attr) and name != before_func.__name__ and name in func_list:
+        if callable(attr) and name != before_func.__name__ and name in func_list: # Wrap only user-facing functions with "release"
             sig = inspect.signature(attr)
-            if "release" in sig.parameters:  # Wrap only functions with "release"
-                setattr(module, name, run_before_decorator(before_func)(attr))
+            if "release" in sig.parameters:  
+                setattr(module, name, _run_before_decorator(before_func)(attr))
 
 FieldName: TypeAlias = str
 OperatorStr: TypeAlias = Literal["==", "!=", "<", "<=", ">", ">=","contains", "isin"]
@@ -55,37 +55,19 @@ FilterStructure: TypeAlias = List[Union[FilterTuple, FilterGroup]] | FilterTuple
 """FilterStructure represents a list of filtering rules for a DataFrame-like object."""
 
     
-def parse_field_path(field_spec):
-    """
-    Parse a field specification that contains nested dictionary access.
-    
-    Args:
-        field_spec: Field specification (e.g., "categories.primary" or "metadata.tags.name")
-        
-    Returns:
-        Tuple of (base_column, keys)
-    """
+def _parse_field_path(field_spec):
+    """Parse a field specification that contains nested dictionary access."""
     path_parts = field_spec.split('.')
     base_column = path_parts[0]
     keys = path_parts[1:] if len(path_parts) > 1 else []
     
     return base_column, keys
 
-def extract_nested_value(array_column, keys):
-    """
-    Extract nested values from a dictionary/struct column.
-    
-    Args:
-        array_column: PyArrow Array representing a column
-        keys: List of keys to traverse in the nested dictionaries
-        
-    Returns:
-        PyArrow Array with the extracted values
-    """
+def _extract_nested_value(array_column, keys):
+    """Extract nested values from a dictionary/struct column."""
     current = array_column
     
     for key in keys:
-        # Extract the field from the struct
         if is_struct(current.type):
             current = current.field(key)
         else:
@@ -93,13 +75,13 @@ def extract_nested_value(array_column, keys):
     
     return current
 
-def evaluate_condition(batch: RecordBatch, col: str, op:str, val:Any):
-    
+def _evaluate_condition(batch: RecordBatch, col: str, op:str, val:Any):
+    """Return mask for batch based on filter."""
     if '.' in col:
-        base_column, keys = parse_field_path(col)
+        base_column, keys = _parse_field_path(col)
         # Extract the field value using the path
         if base_column in batch.column_names:
-            col_values = extract_nested_value(batch[base_column], keys)
+            col_values = _extract_nested_value(batch[base_column], keys)
         else:
             raise ValueError(f"Column '{base_column}' not found in dataset")
     else:
@@ -121,11 +103,19 @@ def evaluate_condition(batch: RecordBatch, col: str, op:str, val:Any):
         return array(mask)
     else:
         raise UnsupportedOperatorError(f"Unsupported operator: {op}")
-
+    
 def evaluate_filter_structure(batch: RecordBatch, structure):
     """
-    Evaluates a nested filter structure against a PyArrow RecordBatch.
+    Convert a place name to its geometry and bounding box.
     
+    Parameters:
+    -----------
+    batch: PyArrow RecordBatch
+        Batch to evaluate.
+    structure: FilterStructure
+        Filters used to evaluate.
+        
+        
     Filter structure rules:
     - A tuple (col, op, val) represents a single condition
     - Items at the same level are combined with OR
@@ -137,12 +127,10 @@ def evaluate_filter_structure(batch: RecordBatch, structure):
     - [[tupleA, tupleB]] - tupleA AND tupleB  
     - [tupleA, [tupleB, tupleC]] - tupleA OR (tupleB AND tupleC)
     - [[tupleA, tupleB], [tupleC, tupleD]] - (tupleA AND tupleB) OR (tupleC AND tupleD)
-    
-    Args:
-        batch: PyArrow RecordBatch to evaluate against
-        structure: Filter structure (tuple or list of tuples/lists)
         
     Returns:
+    --------
+    PyArrow Array
         PyArrow boolean array representing the combined filter mask
     """
     # Helper function for type checking
@@ -153,7 +141,7 @@ def evaluate_filter_structure(batch: RecordBatch, structure):
     # Base case: single filter triplet
     if is_filter_triplet(structure):
         col, op, val = structure
-        return evaluate_condition(batch, col, op, val)
+        return _evaluate_condition(batch, col, op, val)
     
     # Must be a list
     if not isinstance(structure, list):
@@ -166,7 +154,7 @@ def evaluate_filter_structure(batch: RecordBatch, structure):
         if is_filter_triplet(item):
             # Simple filter condition
             col, op, val = item
-            mask = evaluate_condition(batch, col, op, val)
+            mask = _evaluate_condition(batch, col, op, val)
             result_masks.append(mask)
         elif isinstance(item, list):
             # Nested list - items within are AND'd together

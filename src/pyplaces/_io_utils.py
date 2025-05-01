@@ -14,28 +14,31 @@ from ._utils import evaluate_filter_structure, catch_column_filter_error, Filter
 from ._geo_utils import geocode_place_to_bbox, geocode_point_to_bbox
 from ._errors import S3ReadError
 
-def _schema_from_dataset(s3_path,region):
+def schema_from_dataset(s3_path,region):
     """
-    List all parquet files in an S3 path and read the schema from the first one.
+    Get schema from PyArrow dataset.
     
-    Args:
-        s3_path (str): S3 path to directory containing parquet files
-        (e.g., 's3://bucket-name/path/to/dataset/')
-    
+    Parameters:
+    -----------
+    s3_path : str 
+        S3 path to directory containing parquet dataset
+    region : str
+        AWS region
     Returns:
-        Schema: PyArrow schema from the first parquet file
+    --------
+    Schema
+        PyArrow schema from given dataset.
     """
     ds = dataset(
             s3_path, filesystem=S3FileSystem(anonymous=True, region=region)
         )
     return ds.schema
 
-def decode_bytes(obj):
-    """Recursively decode byte strings in nested structures."""
+def _decode_bytes(obj):
     if isinstance(obj, dict):
-        return {decode_bytes(k): decode_bytes(v) for k, v in obj.items()}
+        return {_decode_bytes(k): _decode_bytes(v) for k, v in obj.items()}
     elif isinstance(obj, list):
-        return [decode_bytes(i) for i in obj]
+        return [_decode_bytes(i) for i in obj]
     elif isinstance(obj, bytes):
         return obj.decode("utf-8")
     else:
@@ -65,7 +68,7 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
     GeoDataFrame
         Filtered geodataframe
     """
-    
+    # get pyarrow dataset
     clean_path = path.replace("s3://", "")
     try:
         ds = dataset(
@@ -83,6 +86,8 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
         & (field("bbox", "ymax") > ymin)
     )
     
+    
+    # filter with bounding box
     try:
         batches = ds.to_batches(filter=geo_filter_expr)
     except Exception as e:
@@ -91,16 +96,20 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
         
     non_empty_batches = (b for b in batches if b.num_rows > 0)
     
+    
+    
     def filter_batches(batches):
         for b in batches:
             yield evaluate_filter_structure(b,filters)
     
+    # generate results from complex filters(if needed)
     if filters:
         filtered_batches = filter_batches(non_empty_batches)
     else:
         filtered_batches = non_empty_batches
+    # convert geometry column to correct type in schema
     schema = ds.schema
-    metadata_str = decode_bytes(schema.metadata) 
+    metadata_str = _decode_bytes(schema.metadata) 
     geo_dict = loads(metadata_str["geo"])
     geo_column = geo_dict["primary_column"]
     
@@ -145,6 +154,8 @@ def read_parquet_arrow(path: str, region: str,
     GeoDataFrame
         Filtered dataframe
     """
+    
+    # get pyarrow dataset
     clean_path = path.replace("s3://", "")
     try:
         ds = dataset(
@@ -164,7 +175,8 @@ def read_parquet_arrow(path: str, region: str,
     def filter_batches(batches):
         for b in batches:
             yield evaluate_filter_structure(b,filters)
-        
+    
+    # generate results from complex filters(if needed)
     if filters:
         filtered_batches = filter_batches(non_empty_batches)
     else:
@@ -177,7 +189,7 @@ def read_parquet_arrow(path: str, region: str,
         df = df[columns]
     return df
 
-def get_gdf_from_bbox(release:str, bbox:tuple[float,float,float,float], columns:list[str], filters: FilterStructure, prefix: str, path: str, region: str):
+def _get_gdf_from_bbox(release:str, bbox:tuple[float,float,float,float], columns:list[str], filters: FilterStructure, prefix: str, path: str, region: str):
     """Helper function to get a geodataframe from a bounding box."""
     main_path = path.format(release=release) + prefix
     gdf = read_geoparquet_arrow(main_path, region, bbox, columns=columns, filters=filters)
@@ -278,5 +290,5 @@ def from_bbox(bbox: tuple[float,float,float,float], prefix: str, main_path: str,
     GeoDataFrame
         Filtered geodataframe
     """
-    gdf = get_gdf_from_bbox(release, bbox, columns, filters, prefix, main_path, region)
+    gdf = _get_gdf_from_bbox(release, bbox, columns, filters, prefix, main_path, region)
     return gdf
