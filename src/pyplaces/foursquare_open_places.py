@@ -143,6 +143,27 @@ def get_categories(columns: list[str] | None = None,
     return read_parquet_arrow(path, FSQ_REGION, columns, filters)
 
 def find_categories(search: str, num_results: int = 5, exact_match: bool=False,verbose: bool=False,as_df: bool= False) -> Union[list[str],DataFrame]:
+    """
+    Finds Foursquare Open Places categories based on a user search.
+    
+    Parameters
+    ----------
+    search : str
+        User search term for matching.
+    num_results : int, optional. Defaults to 5
+        Number of matched categories to retrieve.
+    exact_match : bool, optional. Defaults to False.
+        Whether to retrieve only exact matches from search.
+    verbose : bool, optional. Defaults to False.
+        Whether to show the additional information of the matches
+    as_df : bool, optional. Defaults to False.
+        Whether to retrieve the matches as a DataFrame with additional information.
+    
+    Returns
+    -------
+    Union[list[str],Dataframe]
+        Matches as a list of strings or DataFrame.
+    """
     finder = CategoryFinder()
     categories = get_categories()
     finder.load_data(categories)
@@ -163,11 +184,6 @@ def _check_release(release: str):
     ------
     ValueError
         If the specified release version does not exist in the available releases.
-        
-    Notes
-    -----
-    This private helper function reads available release versions from a text file
-    and checks if the specified release is among them.
     """
     with resources.files("pyplaces").joinpath("releases/foursquare/releases.txt").open("r", encoding="utf-8-sig") as f:
         folders = [line.replace("dt=", "").strip(" \n/") for line in f]

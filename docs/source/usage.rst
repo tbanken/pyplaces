@@ -6,10 +6,14 @@ Below you can find the reference for the package modules, as well as some additi
 Dataset Information
 *******************
 
+.. _schemas:
+
 Dataset Schemas and Additional Information
 ===============
 
-In the future, pyplaces will support a more dynamic way to look at the schemas of each dataset. For now, the schema reference for each dataset will be listed here(as well as the main reference for each):
+Schemas can be retrieved from either dataset by using :code:`get_schema`
+
+Additional schema and dataset information can be found below.
 
 * `Overture Map Guide  <https://docs.overturemaps.org//>`_
 * `Overture Maps Schemas <https://docs.overturemaps.org/schema/reference/>`_
@@ -39,6 +43,8 @@ pyplaces.foursquare_open_places
 
 Formatting parameters
 *********************
+
+.. _versions:
 
 Versions
 ============
@@ -109,11 +115,30 @@ Foursquare Open Places Releases
 | 2024-11-19  |
 +-------------+
 
+.. _categories:
+
+Finding Categories
+=======
+
+Finding categories for a place can be challenging because of the accessibility of the category names and codes.(which can be found below)
+
+The :code:`find_categories` function for each dataset can help. You can enter in a search query(eg finding hardware stores by searching "hardware store").
+It uses exact and semantic matching to find relevant categories to the search. The quality of the results depend on how detailed your search is. 
+
+* `Foursquare Open Places Categories <https://docs.foursquare.com/data-products/docs/categories#places-open-source--propremium-flat-file>`_
+* `Overture Places Categories <https://github.com/OvertureMaps/schema/blob/main/docs/schema/concepts/by-theme/places/overture_categories.csv>`_
+
+
+.. _filters:
 Filters
 =======
 
+
 Filters consist of the column that needs filtering, an operator,
 and a value to filter on.
+
+.. note::
+    "contains" operator is for lists only. Future updates will include a "contains" operator for text fields
 
 Basic Filter Structure
 ======================
@@ -185,3 +210,14 @@ Example 2: A AND (B OR C)
     [("active", "==", True), [("score", "\>", 90), ("count", "\>", 10)]]
 
 Finds records where active=True AND (score \>90 OR count\>10)
+
+Accessing Dictionary Columns
+============================
+
+Certain columns within the datasets will be a dictionary, most notably, the Overture Places column "categories."
+This column is set up as a dictionary: :code:`{"primary":"<category>","secondary":["<category2>","<category3>",...]}`
+
+In order to filter by the dictionary values, use a "." in your filter. 
+For example, to filter by primary category by category "eat_and_drink":
+.. code-block::
+    [("categories.primary","==","eat_and_drink")]

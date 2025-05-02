@@ -39,10 +39,10 @@ To access any places, all you need is a place, address, or bounding box: ::
 
 Additionally, you can:
 
-* Select and filter on columns using the \(column,operator,value\) syntax (see support for this syntax [here])
-* Get data from past releases(see support for this [here])
-* Inspect dataset schemas
-* Find relevant category names for retrieving places data
+* Select and filter on columns using the \(column,operator,value\) syntax (see reference :ref:`here <filters>`)
+* Get data from past releases(see reference :ref:`here <versions>`)
+* Inspect dataset schemas(see reference :ref:`here <schemas>`)
+* Find relevant category names for retrieving places data(see reference :ref:`here <categories>`)
 
 Examples
 ========

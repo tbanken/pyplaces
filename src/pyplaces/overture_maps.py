@@ -598,6 +598,27 @@ def get_schema(dataset_name : str,
     return schema.to_string()
 
 def find_categories(search: str, num_results: int = 5, exact_match: bool=False,verbose: bool=False,as_df: bool= False) -> Union[list[str],DataFrame]:
+    """
+    Finds Overture Places categories based on a user search.
+    
+    Parameters
+    ----------
+    search : str
+        User search term for matching.
+    num_results : int, optional. Defaults to 5
+        Number of matched categories to retrieve.
+    exact_match : bool, optional. Defaults to False.
+        Whether to retrieve only exact matches from search.
+    verbose : bool, optional. Defaults to False.
+        Whether to show the additional information of the matches
+    as_df : bool, optional. Defaults to False.
+        Whether to retrieve the matches as a DataFrame with additional information.
+    
+    Returns
+    -------
+    Union[list[str],Dataframe]
+        Matches as a list of strings or DataFrame.
+    """
     finder = CategoryFinder()
     categories = get_categories()
     finder.load_data(categories)
