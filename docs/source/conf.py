@@ -13,7 +13,7 @@
 project = 'pyplaces'
 copyright = '2025, Theodore Banken'
 author = 'Theodore Banken'
-release = '0.2.0'
+release = '0.3.0'
 #TODO dynamically get release
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
