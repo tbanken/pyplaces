@@ -1,13 +1,9 @@
-from pyplaces.foursquare_open_places import foursquare_places_from_address
+from pyplaces import overture_maps as om, foursquare_open_places as fsq
 
+# df=om.overture_base_from_place("Toronto","bathymetry")
 
-# foursquare_places_from_address("204 Hemenway Street",filters=[("incorrect_column",">",0.9)])
+# print(df)
 
-# places.overture_addresses_from_address("204 Hemenway Street",filters=[("confidence",">","incorrect_type")])
+print(fsq.find_categories("waffles"))
 
-# df = pyplaces.overture_maps.overture_places_from_address("204 Hemenway Street")
-
-df = foursquare_places_from_address("204 Hemenway Street")
-
-print(df.columns)
-print(df.head(10))
+print(om.find_categories("waffles"))
