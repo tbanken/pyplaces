@@ -198,6 +198,6 @@ def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> str:
     return schema.to_string()
 
 
-__all__ = ["foursquare_places_from_address", "foursquare_places_from_bbox", "foursquare_places_from_place", "get_categories","get_schema"]
+__all__ = ["foursquare_places_from_address", "foursquare_places_from_bbox", "foursquare_places_from_place", "get_categories","get_schema","find_categories"]
 
 wrap_functions_with_release(__name__, _check_release,__all__)
