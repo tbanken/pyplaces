@@ -58,7 +58,7 @@ Most, if not all, of the functions follow the same type of workflow.
 User Reference
 **************
 
-The user reference is available ::ref::`here <user-ref>` in case you run into any issues. 
+The user reference is available :ref:`here <user-ref>` in case you run into any issues. 
 
 License
 *******
