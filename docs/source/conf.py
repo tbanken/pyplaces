@@ -21,7 +21,7 @@ release = '0.3.1'
 extensions = ['sphinx.ext.autodoc','sphinx_autodoc_typehints','nbsphinx']
 
 templates_path = ['_templates']
-exclude_patterns = ['**.ipynb_checkpoints', '**.ipynb']
+exclude_patterns = []
 
 # html_theme_options = {
 #     "home_page_in_toc": True,
