@@ -31,7 +31,8 @@ dependencies = [
 "shapely>=2.0.7,<3",
 "pyproj>=3.7.1,<4",
 "osmnx>=2.0.2,<3",
-"typing-extensions"]
+"typing-extensions",
+"sentence-transformers"]
 
 [project.urls]
 Documentation = "https://github.com/unknown/pyplaces#readme"

@@ -1,9 +1,11 @@
 """Functions to fetch  geoparquet data from Foursquare Open Places on AWS"""
 from importlib import resources
+from typing import Union
 from geopandas import GeoDataFrame
 from pandas import DataFrame
 from ._utils import FilterStructure, wrap_functions_with_release
 from ._io_utils import from_address, from_bbox, from_place, read_parquet_arrow, schema_from_dataset
+from ._category_finder import CategoryFinder
 
 
 #TODO latest release reads from text file
@@ -140,6 +142,13 @@ def get_categories(columns: list[str] | None = None,
     path = FSQ_MAIN_PATH.format(release=release) + FSQ_CATEGORIES_PREFIX
     return read_parquet_arrow(path, FSQ_REGION, columns, filters)
 
+def find_categories(search: str, num_results: int = 5, exact_match: bool=False,verbose: bool=False,as_df: bool= False) -> Union[list[str],DataFrame]:
+    finder = CategoryFinder()
+    categories = get_categories()
+    finder.load_data(categories)
+    finder.process_data()
+    matches = finder.suggest_categories(search,num_results,exact_match,verbose,as_df)
+    return matches
 
 def _check_release(release: str):
     """

@@ -1,11 +1,12 @@
 """Functions to fetch  geoparquet data from Overture Maps on AWS"""
 from importlib import resources
-import uuid
+from uuid import uuid4
+from typing import Union
 from geopandas import GeoDataFrame
 from pandas import read_csv, DataFrame
-from importlib import resources
 from ._utils import FilterStructure, wrap_functions_with_release
 from ._io_utils import from_address, from_bbox, from_place, schema_from_dataset
+from ._category_finder import CategoryFinder
 
 
 #TODO latest release reads from text file
@@ -477,9 +478,9 @@ def get_categories():
         
         for category in category_hierarchy:
             if category not in category_ids:
-                u_id = str(uuid.uuid4()).replace('-', '')[:24]
+                u_id = str(uuid4()).replace('-', '')[:24]
                 while u_id in category_ids.values():
-                    u_id = str(uuid.uuid4()).replace('-', '')[:24]
+                    u_id = str(uuid4()).replace('-', '')[:24]
                 category_ids[category] = u_id
         
         # Build the full path string
@@ -596,9 +597,13 @@ def get_schema(dataset_name : str,
     schema = schema_from_dataset(path,OVERTURE_REGION)
     return schema.to_string()
 
-
-
-
+def find_categories(search: str, num_results: int = 5, exact_match: bool=False,verbose: bool=False,as_df: bool= False) -> Union[list[str],DataFrame]:
+    finder = CategoryFinder()
+    categories = get_categories()
+    finder.load_data(categories)
+    finder.process_data()
+    matches = finder.suggest_categories(search,num_results,exact_match,verbose,as_df)
+    return matches
 
 #TODO no automation
 def _check_base_type(base_type):
