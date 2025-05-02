@@ -39,15 +39,19 @@ To access any places, all you need is a place, address, or bounding box: ::
 
 Additionally, you can:
 
-* Select columns
-* Filter on columns using the \(column,operator,value\) syntax (see support for this syntax here)
-* Get data from past releases(see support for this here)
+* Select and filter on columns using the \(column,operator,value\) syntax (see support for this syntax [here])
+* Get data from past releases(see support for this [here])
+* Inspect dataset schemas
+* Find relevant category names for retrieving places data
 
 Examples
 ========
 
 .. nbgallery::
    notebooks/example1
+   notebooks/example2
+   notebooks/example3
+   notebooks/example4
    
 Most, if not all, of the functions follow the same type of workflow.
 
@@ -69,8 +73,9 @@ This package uses a geocoder that uses OpenStreetMaps's geocoding service Nomina
 Future Support
 **************
 
-* matching for foursquare categories table(to easily retrive types of POIs)
-* get schemas for each theme/dataset
+* more readable schema output
+* reduce time in the pyarrow parquet reading pipeline
+* speed up model transactions- current implementation is inefficient
 * support more geoparquet datasets
 * basic network analysis for transportation data
 
@@ -79,5 +84,5 @@ Future Support
    :caption: Contents:
 
    usage
-   notebooks/example1
+   
 
