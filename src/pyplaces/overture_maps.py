@@ -398,7 +398,7 @@ def overture_base_from_address(address: str | tuple[float,float],base_type: str,
         A GeoDataFrame containing base data of the specified type within the specified bounding box of the address.
     """
     _check_base_type(base_type)
-    complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
+    complete_prefix = OVERTURE_BASE_PREFIX.format(type=base_type)
     return from_address(address,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
     
 
@@ -427,7 +427,7 @@ def overture_base_from_place(address: str,base_type: str,columns: list[str]| Non
         A GeoDataFrame containing base data of the specified type within the place
     """
     _check_base_type(base_type)
-    complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
+    complete_prefix = OVERTURE_BASE_PREFIX.format(type=base_type)
     return from_place(address,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
     
 
@@ -456,7 +456,7 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
         A GeoDataFrame containing base data of the specified type within the bounding box
     """
     _check_base_type(base_type)
-    complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
+    complete_prefix = OVERTURE_BASE_PREFIX.format(type=base_type)
     return from_bbox(bbox,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
 def get_categories():
@@ -596,8 +596,6 @@ def get_schema(dataset_name : str,
     schema = schema_from_dataset(path,OVERTURE_REGION)
     return schema.to_string()
 
-def find_categories(search: str, num_results: int = 5, exact_match: bool=False,verbose: bool=False,as_df: bool= False):
-    Categor
 
 
 
@@ -617,9 +615,9 @@ def _check_base_type(base_type):
     ValueError
         If the base type is not valid
     """   
-    with open("releases/overture/base_types.txt", "r",encoding="utf-8-sig") as f:
-        folders = [line.replace("type=", "").strip(" \n/") for line in f]
-    if base_type not in folders:
+    with resources.files("pyplaces").joinpath("releases/overture/base_types.txt").open( "r",encoding="utf-8-sig") as f:
+        base_types = [line.replace("type=", "").strip(" \n/") for line in f]
+    if base_type not in base_types:
         raise ValueError(f"Invalid base type:{base_type}")
     
 def _check_release(release):
