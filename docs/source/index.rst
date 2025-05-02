@@ -39,10 +39,10 @@ To access any places, all you need is a place, address, or bounding box: ::
 
 Additionally, you can:
 
-* Select and filter on columns using the \(column,operator,value\) syntax (see reference :ref:`here <filters>`)
-* Get data from past releases(see reference :ref:`here <versions>`)
-* Inspect dataset schemas(see reference :ref:`here <schemas>`)
-* Find relevant category names for retrieving places data(see reference :ref:`here <categories>`)
+* :ref:`Select and filter on columns using the \(column,operator,value\) syntax <filters>`
+* :ref:`Get data from past releases <versions>`
+* :ref:`Inspect dataset schemas <schemas>`
+* :ref:`Find relevant category names for retrieving places data <categories>`
 
 Examples
 ========
@@ -58,7 +58,7 @@ Most, if not all, of the functions follow the same type of workflow.
 User Reference
 **************
 
-The user reference is available here in case you run into any issues. 
+The user reference is available ::ref::`here <user-ref>` in case you run into any issues. 
 
 License
 *******
@@ -74,6 +74,7 @@ Future Support
 **************
 
 * more readable schema output
+* more filter operators
 * reduce time in the pyarrow parquet reading pipeline
 * speed up model transactions- current implementation is inefficient
 * support more geoparquet datasets
@@ -81,8 +82,5 @@ Future Support
 
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
-
    usage
-   
 
