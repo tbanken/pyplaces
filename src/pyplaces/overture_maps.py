@@ -2,6 +2,7 @@
 from importlib import resources
 import uuid
 from geopandas import GeoDataFrame
+from pandas import read_csv, DataFrame
 from importlib import resources
 from ._utils import FilterStructure, wrap_functions_with_release
 from ._io_utils import from_address, from_bbox, from_place, schema_from_dataset
@@ -458,6 +459,85 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
     complete_prefix = OVERTURE_BASE_PREFIX.format(base_type=base_type)
     return from_bbox(bbox,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
+def get_categories():
+    
+    df = read_csv(OVERTURE_CATEGORIES_URL, converters={" Overture Taxonomy": lambda x : x.strip().strip("[]").split(",")}, sep=';')
+    
+    # Create a dictionary to store unique IDs for each category
+    category_ids = {}
+    
+    all_records = []
+    
+    for _, row in df.iterrows():
+        category_hierarchy = row[" Overture Taxonomy"]
+        
+        # Only create a record for the last/deepest level in the hierarchy
+        deepest_level = len(category_hierarchy)
+        current_category = category_hierarchy[deepest_level - 1]
+        
+        for category in category_hierarchy:
+            if category not in category_ids:
+                u_id = str(uuid.uuid4()).replace('-', '')[:24]
+                while u_id in category_ids.values():
+                    u_id = str(uuid.uuid4()).replace('-', '')[:24]
+                category_ids[category] = u_id
+        
+        # Build the full path string
+        path_parts = []
+        for category in category_hierarchy:
+            formatted_part = ' '.join(word.capitalize() for word in category.split('_'))
+            path_parts.append(formatted_part)
+        
+        full_path = ' > '.join(path_parts)
+        
+        record = {
+            'category_id': category_ids[current_category],
+            'category_level': deepest_level,
+            'category_name': current_category,
+            'category_label': full_path,
+            'level1_category_id': None,
+            'level1_category_name': None,
+            'level2_category_id': None,
+            'level2_category_name': None,
+            'level3_category_id': None,
+            'level3_category_name': None,
+            'level4_category_id': None,
+            'level4_category_name': None,
+            'level5_category_id': None,
+            'level5_category_name': None,
+            'level6_category_id': None,
+            'level6_category_name': None
+        }
+        
+        # Fill in the level fields based on the hierarchy
+        for j in range(min(deepest_level, 6)):
+            level_name = category_hierarchy[j]
+            level_id = category_ids[level_name]
+            
+            record[f'level{j+1}_category_id'] = level_id
+            record[f'level{j+1}_category_name'] = level_name
+        
+        all_records.append(record)
+    
+    result_df = DataFrame(all_records)
+    
+    column_order = [
+        'category_id', 'category_level', 'category_name', 'category_label',
+        'level1_category_id', 'level1_category_name',
+        'level2_category_id', 'level2_category_name',
+        'level3_category_id', 'level3_category_name',
+        'level4_category_id', 'level4_category_name',
+        'level5_category_id', 'level5_category_name',
+        'level6_category_id', 'level6_category_name'
+    ]
+    
+    
+    available_columns = [col for col in column_order if col in result_df.columns]
+    
+    result_df = result_df[available_columns]
+    
+    return result_df
+
 def get_schema(dataset_name : str,
                 connector : bool = False,
                 building_part : bool = False,base_type : str = None,release: str = OVERTURE_LATEST_RELEASE):
@@ -515,6 +595,9 @@ def get_schema(dataset_name : str,
     # print(path)
     schema = schema_from_dataset(path,OVERTURE_REGION)
     return schema.to_string()
+
+def find_categories(search: str, num_results: int = 5, exact_match: bool=False,verbose: bool=False,as_df: bool= False):
+    Categor
 
 
 
