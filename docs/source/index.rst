@@ -44,15 +44,6 @@ Additionally, you can:
 * :ref:`Inspect dataset schemas <schemas>`
 * :ref:`Find relevant category names for retrieving places data <categories>`
 
-Examples
-========
-
-.. nbgallery::
-   notebooks/example1
-   notebooks/example2
-   notebooks/example3
-   notebooks/example4
-   
 Most, if not all, of the functions follow the same type of workflow.
 
 User Reference
@@ -84,4 +75,5 @@ Future Support
    :maxdepth: 3
    
    usage
+   examples
 
