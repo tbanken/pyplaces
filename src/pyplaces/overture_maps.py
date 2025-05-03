@@ -39,9 +39,9 @@ def overture_places_from_address(address: str | tuple[float,float],
     address : str | tuple[float,float]
         The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     distance : float, optional
@@ -67,9 +67,9 @@ def overture_places_from_place(address: str,columns: list[str]| None=None,filter
     address : str
         The place name to search within
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -91,9 +91,9 @@ def overture_places_from_bbox(bbox: tuple[float,float,float,float],columns: list
     bbox : tuple[float, float, float, float]
         The bounding box coordinates (min_x, min_y, max_x, max_y)
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -115,9 +115,9 @@ def overture_buildings_from_address(address: str | tuple[float,float],columns: l
     address : str | tuple[float,float]
         The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     distance : float, optional
@@ -149,9 +149,9 @@ def overture_buildings_from_place(address: str,columns: list[str]| None=None,fil
     address : str
         The place name to search within
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -179,9 +179,9 @@ def overture_buildings_from_bbox(bbox: tuple[float,float,float,float],columns: l
     bbox : tuple[float, float, float, float]
         The bounding box coordinates (min_x, min_y, max_x, max_y)
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -209,9 +209,9 @@ def overture_transportation_from_address(address: str | tuple[float,float],colum
     address : str | tuple[float,float]
         The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     distance : float, optional
@@ -243,9 +243,9 @@ def overture_transportation_from_place(address: str,columns: list[str]| None=Non
     address : str
         The place name to search within
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -273,9 +273,9 @@ def overture_transportation_from_bbox(bbox: tuple[float,float,float,float],colum
     bbox : tuple[float, float, float, float]
         The bounding box coordinates (min_x, min_y, max_x, max_y)
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -303,9 +303,9 @@ def overture_addresses_from_address(address: str | tuple[float,float],columns: l
     address : str | tuple[float,float]
         The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     distance : float, optional
@@ -331,9 +331,9 @@ def overture_addresses_from_place(address: str,columns: list[str]| None=None,fil
     address : str
         The place name to search within
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -355,9 +355,9 @@ def overture_addresses_from_bbox(bbox: tuple[float,float,float,float],columns: l
     bbox : tuple[float, float, float, float]
         The bounding box coordinates (min_x, min_y, max_x, max_y)
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -381,9 +381,9 @@ def overture_base_from_address(address: str | tuple[float,float],base_type: str,
     base_type : str
         The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water".
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     distance : float, optional
@@ -414,9 +414,9 @@ def overture_base_from_place(address: str,base_type: str,columns: list[str]| Non
     base_type : str
         The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water"
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -443,9 +443,9 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
     base_type : str
         The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water"
     columns : list[str] | None, optional
-        Specific columns to include in the result, by default None
+        Specific columns to include in the result.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, optional
@@ -460,8 +460,7 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
     complete_prefix = OVERTURE_BASE_PREFIX.format(type=base_type)
     return from_bbox(bbox,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def get_categories():
-    
+def get_categories() -> DataFrame:
     df = read_csv(OVERTURE_CATEGORIES_URL, converters={" Overture Taxonomy": lambda x : x.strip().strip("[]").split(",")}, sep=';')
     
     # Create a dictionary to store unique IDs for each category
@@ -550,11 +549,11 @@ def get_schema(dataset_name : str,
         dataset_name : str
             Name of the dataset to get the schema of, must be one of \"buildings\",\"transportation\",\"base\",\"places\",\"addresses\"
         connector : bool, optional
-            Whether to retrieve connector schema, by default False.
+            Whether to retrieve connector schema. Defaults to False.
         building_part : bool, optional 
-            Whether to retrieve building_part schema, by default False.
+            Whether to retrieve building_part schema. Defaults to False.
         base_type : str, optional 
-            Which base type schema to retrive, by default None.
+            Which base type schema to retrive.
         release : str, optional 
             Release version to use, defaults to the latest version.
     Returns
@@ -670,6 +669,6 @@ def _check_release(release):
 __all__ = ["overture_addresses_from_address","overture_addresses_from_bbox","overture_addresses_from_place","overture_base_from_address", 
             "overture_base_from_bbox","overture_base_from_place","overture_buildings_from_address","overture_buildings_from_bbox",
             "overture_buildings_from_place","overture_places_from_address","overture_places_from_bbox","overture_places_from_place",
-            "overture_transportation_from_address","overture_transportation_from_bbox","overture_transportation_from_place","get_schema","find_categories"]
+            "overture_transportation_from_address","overture_transportation_from_bbox","overture_transportation_from_place","get_schema","find_categories","get_categories"]
 
 wrap_functions_with_release(__name__, _check_release,__all__)

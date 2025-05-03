@@ -1,4 +1,4 @@
-"""Functions to fetch  geoparquet data from Foursquare Open Places on AWS"""
+"""Functions to fetch geoparquet data from Foursquare Open Places on AWS"""
 from importlib import resources
 from typing import Union
 from geopandas import GeoDataFrame
@@ -36,9 +36,9 @@ def foursquare_places_from_address(address: str | tuple[float,float],
     address : str | tuple[float,float]
         The addres or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
-        Specific columns to retrieve from the dataset. If None, all columns are retrieved.
+        Specific columns to retrieve from the dataset.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results. 
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     distance : float, default 500
@@ -57,8 +57,8 @@ def foursquare_places_from_address(address: str | tuple[float,float],
 
 
 def foursquare_places_from_place(address: str,
-                                    columns: list[str] | None = None, 
-                                    filters: FilterStructure = None, 
+                                    columns: list[str] | None = None,
+                                    filters: FilterStructure = None,
                                     release: str = FSQ_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieves Foursquare places data for a specific place identified by its address or place name.
@@ -68,9 +68,9 @@ def foursquare_places_from_place(address: str,
     address : str
         The address or identifier of the place to retrieve data for.
     columns : list[str] | None, optional
-        Specific columns to retrieve from the dataset. If None, all columns are retrieved.
+        Specific columns to retrieve from the dataset.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, default FSQ_LATEST_RELEASE
@@ -84,9 +84,9 @@ def foursquare_places_from_place(address: str,
     return from_place(address, FSQ_PLACES_PREFIX, FSQ_MAIN_PATH, FSQ_REGION, release, columns, filters)
 
 
-def foursquare_places_from_bbox(bbox: tuple[float, float, float, float], 
-                                columns: list[str] | None = None, 
-                                filters: FilterStructure | None = None, 
+def foursquare_places_from_bbox(bbox: tuple[float, float, float, float],
+                                columns: list[str] | None = None,
+                                filters: FilterStructure | None = None,
                                 release: str = FSQ_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieves Foursquare places data within a specified bounding box.
@@ -96,9 +96,9 @@ def foursquare_places_from_bbox(bbox: tuple[float, float, float, float],
     bbox : tuple[float, float, float, float]
         Bounding box coordinates in the format (min_x, min_y, max_x, max_y).
     columns : list[str] | None, optional
-        Specific columns to retrieve from the dataset. If None, all columns are retrieved.
+        Specific columns to retrieve from the dataset. 
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, default FSQ_LATEST_RELEASE
@@ -121,9 +121,9 @@ def get_categories(columns: list[str] | None = None,
     Parameters
     ----------
     columns : list[str] | None, optional
-        Specific columns to retrieve from the dataset. If None, all columns are retrieved.
+        Specific columns to retrieve from the dataset.
     filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. By default, None.
+        Filter criteria to apply to the results.
         Should be a list in the format(column,operator,value)
         Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
     release : str, default FSQ_LATEST_RELEASE

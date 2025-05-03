@@ -10,9 +10,9 @@ pyplaces |release| documentation
 
 **Pyplaces** is a Python package that allows you to easily read places data from a known address, place, or just a bounding box. Currently, the two sources are
 Overture Maps and Foursquare Open Places. Overture Maps provides support to get data from multiple versions of the dataset for all of its themes. 
-Foursquare Open Places is primarily point of interest data which is also supports fetching multiple versions of the dataset.
+Foursquare Open Places is primarily point of interest data which also supports fetching multiple versions of the dataset.
 
-**The available datasets are: Foursquare Places and Categories, Overture Places, Addresses, Transportation, Buildings, and Base layers.**
+**The available datasets are: Foursquare Places and Categories; Overture Places, Addresses, Transportation, Buildings, and Base layers.**
 
 Quickstart
 **********
@@ -31,7 +31,7 @@ I recommend that you use Anaconda for your Python environments. (I use miniforge
 Basic Usage
 ===========
 
-To access any places, all you need is a place, address, or bounding box: ::
+To access places, all you need is a place, address, or bounding box: ::
 
    from pyplaces.foursquare_open_places import foursquare_places_from_address
 
@@ -44,7 +44,7 @@ Additionally, you can:
 * :ref:`Inspect dataset schemas <schemas>`
 * :ref:`Find relevant category names for retrieving places data <categories>`
 
-Most, if not all, of the functions follow the same type of workflow.
+Most of the functions follow the same type of workflow.
 
 
 
