@@ -46,10 +46,25 @@ Additionally, you can:
 
 Most, if not all, of the functions follow the same type of workflow.
 
+
+
+Examples
+**************
+
+.. toctree::
+   :maxdepth: 3
+   
+   examples
+
 User Reference
 **************
 
-The user reference is available :ref:`here <user-ref>` in case you run into any issues. 
+.. toctree::
+   :maxdepth: 3
+   
+   usage
+
+
 
 License
 *******
@@ -70,10 +85,4 @@ Future Support
 * speed up model transactions- current implementation is inefficient
 * support more geoparquet datasets
 * basic network analysis for transportation data
-
-.. toctree::
-   :maxdepth: 3
-   
-   usage
-   examples
 
