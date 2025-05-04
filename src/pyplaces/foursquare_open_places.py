@@ -162,7 +162,7 @@ def find_categories(search: str, num_results: int = 5, exact_match: bool=False,v
     Returns
     -------
     Union[list[str],Dataframe]
-        Matches as a list of strings or DataFrame.
+        Matched Foursquare Category IDs as a list of strings or DataFrame.
     """
     finder = CategoryFinder()
     categories = get_categories()
