@@ -32,7 +32,8 @@ dependencies = [
 "pyproj>=3.7.1,<4",
 "osmnx>=2.0.2,<3",
 "typing-extensions",
-"sentence-transformers"]
+"sentence-transformers",
+"ipywidgets"]
 
 [project.urls]
 Documentation = "https://github.com/unknown/pyplaces#readme"
