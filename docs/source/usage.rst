@@ -124,8 +124,8 @@ Finding Categories
 
 Finding categories for a place can be challenging because of the accessibility of the category names and codes.(which can be found below)
 
-The :code:`find_categories` function for each dataset can help. You can enter in a search query(eg finding hardware stores by searching "hardware store").
-It uses exact and semantic matching to find relevant categories to the search. The quality of the results depend on how detailed your search is. 
+The :code:`find_categories` function for each dataset can help. You can enter in a search query(e.g., finding hardware stores by searching "hardware store").
+It uses exact and semantic matching to find relevant categories to the search. The quality of the results depend on the detail of your search. 
 
 * `Foursquare Open Places Categories <https://docs.foursquare.com/data-products/docs/categories#places-open-source--propremium-flat-file>`_
 * `Overture Places Categories <https://github.com/OvertureMaps/schema/blob/main/docs/schema/concepts/by-theme/places/overture_categories.csv>`_
@@ -220,6 +220,4 @@ Certain columns within the datasets will be a dictionary, most notably, the Over
 This column is set up as a dictionary: :code:`{"primary":"<category>","secondary":["<category2>","<category3>",...]}`
 
 In order to filter by the dictionary values, use a "." in your filter. 
-For example, to filter by primary category by category "eat_and_drink":
-.. code-block::
-    [("categories.primary","==","eat_and_drink")]
+For example, to filter by primary category by category "eat_and_drink": :code:`[("categories.primary","==","eat_and_drink")]`
