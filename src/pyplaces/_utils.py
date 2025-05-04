@@ -106,81 +106,53 @@ def _evaluate_condition(batch: RecordBatch, col: str, op:str, val:Any):
     
 def evaluate_filter_structure(batch: RecordBatch, structure):
     """
-    Convert a place name to its geometry and bounding box.
-    
-    Parameters:
-    -----------
-    batch: PyArrow RecordBatch
-        Batch to evaluate.
-    structure: FilterStructure
-        Filters used to evaluate.
-        
-        
-    Filter structure rules:
-    - A tuple (col, op, val) represents a single condition
-    - Items at the same level are combined with OR
-    - Items nested within a list are combined with AND
-    
-    Examples:
-    - (col, op, val) - Simple condition
-    - [tupleA, tupleB] - tupleA OR tupleB
-    - [[tupleA, tupleB]] - tupleA AND tupleB  
-    - [tupleA, [tupleB, tupleC]] - tupleA OR (tupleB AND tupleC)
-    - [[tupleA, tupleB], [tupleC, tupleD]] - (tupleA AND tupleB) OR (tupleC AND tupleD)
-        
-    Returns:
-    --------
-    PyArrow Array
-        PyArrow boolean array representing the combined filter mask
+    Evaluate a recursive filter structure into a PyArrow boolean array.
+
+    See docstring above for rules.
     """
-    # Helper function for type checking
+
     def is_filter_triplet(item):
         return (isinstance(item, tuple) and len(item) == 3 and 
                 isinstance(item[0], str) and isinstance(item[1], str))
-    
-    # Base case: single filter triplet
-    if is_filter_triplet(structure):
-        col, op, val = structure
-        return _evaluate_condition(batch, col, op, val)
-    
-    # Must be a list
-    if not isinstance(structure, list):
-        raise ValueError(f"Invalid filter structure: {structure}")
-    
-    # All items at same level are OR'd together
-    result_masks = []
-    
-    for item in structure:
-        if is_filter_triplet(item):
-            # Simple filter condition
-            col, op, val = item
-            mask = _evaluate_condition(batch, col, op, val)
-            result_masks.append(mask)
-        elif isinstance(item, list):
-            # Nested list - items within are AND'd together
-            and_masks = []
-            for sub_item in item:
-                sub_mask = evaluate_filter_structure(batch, sub_item)
-                and_masks.append(sub_mask)
-            
-            if and_masks:
-                # Combine with AND
-                combined = and_masks[0]
-                for mask in and_masks[1:]:
-                    combined = and_(combined,mask)
-                result_masks.append(combined)
-        else:
-            raise ValueError(f"Invalid filter element: {item}")
-    
-    # Combine all results at this level with OR
-    if not result_masks:
-        raise ValueError("No valid filters found in structure")
-    
-    result = result_masks[0]
-    for mask in result_masks[1:]:
-        result = or_(result,mask)
-    
-    return batch.filter(result)
+
+    def _eval_recursive(structure):
+        if is_filter_triplet(structure):
+            col, op, val = structure
+            return _evaluate_condition(batch, col, op, val)
+
+        if not isinstance(structure, list):
+            raise ValueError(f"Invalid filter structure: {structure}")
+
+        processed_masks = []
+        raw_triplets = []
+
+        for item in structure:
+            if is_filter_triplet(item):
+                raw_triplets.append(item)
+            elif isinstance(item, list):
+                # Recursively evaluate nested structure
+                processed_masks.append(_eval_recursive(item))
+            else:
+                raise ValueError(f"Invalid filter element: {item}")
+
+        # If raw triplets exist at this level, OR them together
+        if raw_triplets:
+            raw_masks = [_evaluate_condition(batch, *triplet) for triplet in raw_triplets]
+            combined_raw = raw_masks[0]
+            for mask in raw_masks[1:]:
+                combined_raw = or_(combined_raw, mask)
+            processed_masks.insert(0, combined_raw)
+
+        # Now, apply AND to all collected processed masks (from this and sub-levels)
+        result = processed_masks[0]
+        for mask in processed_masks[1:]:
+            result = and_(result, mask)
+
+        return result
+
+    final_mask = _eval_recursive(structure)
+    return batch.filter(final_mask)
+
 
 def catch_column_filter_error(exc_type: BaseException,error: Exception) -> None:
     """

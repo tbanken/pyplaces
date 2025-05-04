@@ -160,7 +160,7 @@ class CategoryFinder:
                 
         return sorted(results, key=lambda x: x['similarity_score'], reverse=True)
     
-    def suggest_categories(self, query: str, top_n, exact_match,verbose,as_df) -> Union[list[str], DataFrame]:
+    def suggest_categories(self, query: str, top_n, exact_match,verbose,as_df,hide_ids,list_return,show_name_and_id=False) -> Union[list[str], DataFrame]:
         """
         Suggest categories using exact matching and semantic matching.
         
@@ -185,14 +185,22 @@ class CategoryFinder:
         
         matches = self._find_categories(query, top_n=top_n, exact_match=exact_match)
         
-        matches = self._remove_redundant_children(matches)
-        if verbose:
-            df = DataFrame(matches)
-            print(df)
-            if as_df:
-                return df
-        category_names = [item['category_name'] for item in matches]
-        return category_names
+        # matches = self._remove_redundant_children(matches)
+        df = DataFrame(matches)
+        if hide_ids:
+            df = df[df.columns.drop(list(df.filter(regex='category_id')))]
+        
+        if show_name_and_id:
+            if verbose:
+                print(df)
+            else:
+                print(df[["category_id","category_name"]])    
+        if as_df:
+            return df
+        if list_return == "name":
+            return [item['category_name'] for item in matches]
+        else:
+            return [item['category_id'] for item in matches]
     
     def _remove_redundant_children(self, categories: List[Dict]) -> List[Dict]:
         if not categories or len(categories) <= 1:

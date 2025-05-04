@@ -168,7 +168,7 @@ def find_categories(search: str, num_results: int = 5, exact_match: bool=False,v
     categories = get_categories()
     finder.load_data(categories)
     finder.process_data()
-    matches = finder.suggest_categories(search,num_results,exact_match,verbose,as_df)
+    matches = finder.suggest_categories(search,num_results,exact_match,verbose,as_df,hide_ids=False,list_return="",show_name_and_id=True)
     return matches
 
 def _check_release(release: str):
