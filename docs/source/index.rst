@@ -46,16 +46,6 @@ Additionally, you can:
 
 Most of the functions follow the same type of workflow.
 
-
-
-Examples
-**************
-
-.. toctree::
-   :maxdepth: 3
-   
-   examples
-
 User Reference
 **************
 
@@ -64,7 +54,13 @@ User Reference
    
    usage
 
+Examples
+**************
 
+.. toctree::
+   :maxdepth: 3
+   
+   examples
 
 License
 *******
