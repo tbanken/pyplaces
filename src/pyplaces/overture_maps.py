@@ -13,7 +13,7 @@ from ._category_finder import CategoryFinder
 OVERTURE_MAIN_PATH = 's3://overturemaps-us-west-2/release/{release}/'
 OVERTURE_BUCKET = 'overturemaps-us-west-2'
 OVERTURE_REGION = 'us-west-2'
-OVERTURE_LATEST_RELEASE = "2025-04-23.0"
+OVERTURE_LATEST_RELEASE = "2025-06-25.0"
 
 OVERTURE_PLACES_PREFIX = "theme=places/type=place/"
 OVERTURE_BUILDINGS_PREFIX = "theme=buildings/type=building/"
