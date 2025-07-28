@@ -67,7 +67,7 @@ def test_foursquare_places():
 def test_overture_maps():
     
     places_schema = ['id', 'geometry', 'bbox', 'version', 'sources', 'names', 'categories',
-                            'confidence', 'websites', 'socials', 'emails', 'phones', 'brand','addresses','']
+                            'confidence', 'websites', 'socials', 'emails', 'phones', 'brand','addresses']
     addresses_schema = ['id', 'geometry', 'bbox', 'country', 'postcode', 'street', 'number',
                         'unit', 'address_levels', 'postal_city', 'version', 'sources']
     buildings_schema = ['id', 'geometry', 'bbox', 'sources', 'level', 'subtype',
