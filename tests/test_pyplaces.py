@@ -16,7 +16,7 @@ def test_foursquare_places():
                     'region', 'postcode', 'admin_region', 'post_town', 'po_box', 'country',
                     'date_created', 'date_refreshed', 'date_closed', 'tel', 'website',
                     'email', 'facebook_id', 'instagram', 'twitter', 'fsq_category_ids',
-                    'fsq_category_labels', 'placemaker_url', 'geom', 'bbox']
+                    'fsq_category_labels', 'placemaker_url', 'geom', 'bbox','unresolved_flags']
     places_schema.sort()
     categories_schema = ["category_id","category_level","category_name","category_label","level1_category_id","level1_category_name",
                             "level2_category_id","level2_category_name","level3_category_id","level3_category_name","level4_category_id",
@@ -67,7 +67,7 @@ def test_foursquare_places():
 def test_overture_maps():
     
     places_schema = ['id', 'geometry', 'bbox', 'version', 'sources', 'names', 'categories',
-                            'confidence', 'websites', 'socials', 'emails', 'phones', 'brand','addresses']
+                            'confidence', 'websites', 'socials', 'emails', 'phones', 'brand','addresses','']
     addresses_schema = ['id', 'geometry', 'bbox', 'country', 'postcode', 'street', 'number',
                         'unit', 'address_levels', 'postal_city', 'version', 'sources']
     buildings_schema = ['id', 'geometry', 'bbox', 'sources', 'level', 'subtype',
@@ -79,7 +79,7 @@ def test_overture_maps():
                                 'is_underground', 'num_floors', 'num_floors_underground',
                                 'min_height', 'min_floor', 'facade_color', 'facade_material',
                                 'roof_material', 'roof_shape', 'roof_direction', 'roof_orientation',
-                                'roof_color', 'roof_height', 'building_id','version']
+                                'roof_color', 'roof_height', 'building_id','version','names']
     transportation_segment_schema = ['id', 'geometry', 'bbox', 'version', 'sources', 'subtype', 'class',
                                             'names', 'connectors', 'routes', 'subclass', 'subclass_rules',
                                             'access_restrictions', 'level_rules', 'destinations',

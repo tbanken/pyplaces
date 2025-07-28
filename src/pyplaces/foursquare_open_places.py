@@ -14,7 +14,7 @@ FSQ_BUCKET = 'fsq-os-places-us-east-1'
 FSQ_REGION = 'us-east-1'
 FSQ_PLACES_PREFIX = "places/parquet/"
 FSQ_CATEGORIES_PREFIX = "categories/parquet/"
-FSQ_LATEST_RELEASE = "2025-06-10"
+FSQ_LATEST_RELEASE = "2025-07-08"
 
 # FSQ_FUSED_MAIN_PATH = 's3://us-west-2.opendata.source.coop/fused/fsq-os-places/{release}/'
 # FSQ_FUSED_BUCKET = 's-west-2.opendata.source.coop'
