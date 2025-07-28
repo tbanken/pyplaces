@@ -83,7 +83,7 @@ def test_overture_maps():
     transportation_segment_schema = ['id', 'geometry', 'bbox', 'version', 'sources', 'subtype', 'class',
                                             'names', 'connectors', 'routes', 'subclass', 'subclass_rules',
                                             'access_restrictions', 'level_rules', 'destinations',
-                                            'prohibited_transitions', 'road_surface', 'road_flags', 'speed_limits',
+                                            'prohibited_transitions', 'road_surface', 'road_flags','rail_flags','speed_limits',
                                             'width_rules']
     transportation_connector_schema = ['id', 'geometry', 'bbox', 'version', 'sources']
     addresses_schema.sort()
