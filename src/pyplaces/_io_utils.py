@@ -1,22 +1,17 @@
 """I/O utility functions for reading data."""
 
 from __future__ import annotations
-from json import loads
-import sys
-
-from pyarrow import RecordBatchReader
-from pyarrow.compute import field
-from pyarrow.dataset import dataset
-from pyarrow.fs import S3FileSystem
+import json
 from geopandas import GeoDataFrame
+import duckdb
+import geopandas as gpd
 
-from ._utils import evaluate_filter_structure, catch_column_filter_error, FilterStructure
+
 from ._geo_utils import geocode_place_to_bbox, geocode_point_to_bbox
-from ._errors import S3ReadError
 
 def schema_from_dataset(s3_path,region):
     """
-    Get schema from PyArrow dataset.
+    Get schema from parquet dataset.
     
     Parameters:
     -----------
@@ -27,26 +22,24 @@ def schema_from_dataset(s3_path,region):
     Returns:
     --------
     Schema
-        PyArrow schema from given dataset.
+        DuckDB schema from given dataset.
     """
-    ds = dataset(
-            s3_path, filesystem=S3FileSystem(anonymous=True, region=region)
-        )
-    return ds.schema
+    conn = duckdb.connect()
+    conn.execute(f"SET s3_region='{region}';")
+    conn.execute("SET s3_use_ssl=true;")
+    
+    s3_path = s3_path + '*.parquet'
+    schema_query = f"""
+        SELECT DISTINCT name as 'Column' ,type as 'Type'
+        FROM parquet_schema('{s3_path}');
+        """
+    df = conn.execute(schema_query).df()
+    df = df.sort_values("Column").reset_index(drop="index")
+    return df
 
-def _decode_bytes(obj):
-    if isinstance(obj, dict):
-        return {_decode_bytes(k): _decode_bytes(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [_decode_bytes(i) for i in obj]
-    elif isinstance(obj, bytes):
-        return obj.decode("utf-8")
-    else:
-        return obj
-
-def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,float], 
+def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float,float], 
                         columns: list[str] | None = None, 
-                        filters: FilterStructure | None = None) -> GeoDataFrame:
+                        filters: str | None = None) -> GeoDataFrame:
     """
     Read geospatial data from a parquet file on S3 with filtering by bbox.
     
@@ -60,81 +53,64 @@ def read_geoparquet_arrow(path: str, region: str, bbox: tuple[float,float,float,
         Bounding box as (minx, miny, maxx, maxy)
     columns : list, optional
         Columns to select
-    filters : FilterStructure, optional
-        Filter expression
+    filters : str, optional
+        DuckDB SQL expression
         
     Returns:
     --------
     GeoDataFrame
         Filtered geodataframe
     """
-    # get pyarrow dataset
-    clean_path = path.replace("s3://", "")
-    try:
-        ds = dataset(
-            clean_path, filesystem=S3FileSystem(anonymous=True, region=region)
-        )
-    except Exception as e:
-        raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
+    conn = duckdb.connect()
+    
+    # Install and load spatial extension for geometry handling
+    conn.execute("INSTALL spatial;")
+    conn.execute("LOAD spatial;")
+    conn.execute("INSTALL httpfs;")
+    conn.execute("LOAD httpfs;")
+    conn.execute(f"SET s3_region='{region}';")
+    conn.execute("SET s3_use_ssl=true;")
     
     xmin, ymin, xmax, ymax = bbox
+    path = path + '*.parquet'
     
-    geo_filter_expr = (
-        (field("bbox", "xmin") < xmax)
-        & (field("bbox", "xmax") > xmin)
-        & (field("bbox", "ymin") < ymax)
-        & (field("bbox", "ymax") > ymin)
-    )
+    metadata_query = """
+                    SELECT decode(key) as 'key', decode(value) as 'value'
+                    FROM parquet_kv_metadata('s3://overturemaps-us-west-2/release/2025-07-23.0/theme=places/type=place/*.parquet')
+                    WHERE key = 'geo' 
+                    LIMIT 1;
+                    """
+    metadata_df = conn.execute(metadata_query).df()
+    geom_col_name = json.loads(metadata_df['value'].iloc[0])['primary_column']
     
+    # Select all if no selections, otherwise join selections together, exclude geometry column and cast it as text column
+    column_select = ("*" if columns is None else ", ".join(columns)) + f" EXCLUDE ({geom_col_name}), ST_AsText({geom_col_name}) as 'geometry'"
     
-    # filter with bounding box
-    try:
-        batches = ds.to_batches(filter=geo_filter_expr)
-    except Exception as e:
-        exc_info = sys.exc_info()[0]
-        catch_column_filter_error(exc_info,e)
-        
-    non_empty_batches = (b for b in batches if b.num_rows > 0)
+    # Build spatial filter using bbox columns
+    spatial_filter = f"""
+        bbox.xmin < {xmax} AND
+        bbox.xmax > {xmin} AND
+        bbox.ymin < {ymax} AND
+        bbox.ymax > {ymin}
+    """
     
+    # Construct the main query
+    query = f"""
+        SELECT {column_select}
+        FROM read_parquet('{path}')
+        WHERE {spatial_filter}
+    """
+    df = conn.execute(query).df()
     
+    conn.close()
     
-    def filter_batches(batches):
-        for b in batches:
-            yield evaluate_filter_structure(b,filters)
-    
-    # generate results from complex filters(if needed)
-    if filters:
-        filtered_batches = filter_batches(non_empty_batches)
-    else:
-        filtered_batches = non_empty_batches
-    # convert geometry column to correct type in schema
-    schema = ds.schema
-    metadata_str = _decode_bytes(schema.metadata) 
-    geo_dict = loads(metadata_str["geo"])
-    geo_column = geo_dict["primary_column"]
-    
-    geometry_field_index = schema.get_field_index(geo_column)
-    geometry_field = schema.field(geometry_field_index)
-    geoarrow_geometry_field = geometry_field.with_metadata(
-        {b"ARROW:extension:name": b"geoarrow.wkb"}
-    )
-
-    geoarrow_schema = schema.set(geometry_field_index, geoarrow_geometry_field)
-    reader = RecordBatchReader.from_batches(geoarrow_schema, filtered_batches)
-    gdf = GeoDataFrame.from_arrow(reader)
-    gdf.set_crs("EPSG:4326",inplace=True)
-    
-    try:
-        if columns:
-            gdf = gdf[columns]
-    except Exception as e:
-        raise e
+    gdf = gpd.GeoDataFrame(df,crs="EPSG:4326",geometry=gpd.GeoSeries.from_wkt(df["geometry"]))  
     
     return gdf
 
-def read_parquet_arrow(path: str, region: str, 
+def read_parquet_duckdb(path: str, region: str, 
                     columns: list[str] | None = None, 
-                    filters: FilterStructure | None = None) -> GeoDataFrame:
+                    filters: str | None = None) -> GeoDataFrame:
     """
     Read tabular data from a parquet file on S3.
     
@@ -146,57 +122,46 @@ def read_parquet_arrow(path: str, region: str,
         AWS region
     columns : list, optional
         Columns to select
-    filters : FilterStructure, optional
-        Filter expression
+    filters : str, optional
+        DuckDB SQL expression
         
     Returns:
     --------
     GeoDataFrame
         Filtered dataframe
     """
+    conn = duckdb.connect()
     
-    # get pyarrow dataset
-    clean_path = path.replace("s3://", "")
-    try:
-        ds = dataset(
-            clean_path, filesystem=S3FileSystem(anonymous=True, region=region)
-        )
-    except Exception as e:
-        raise S3ReadError(f"Read from bucket {clean_path} could not be complete.") from e
+    # Install and load spatial extension for geometry handling
+    conn.execute("INSTALL httpfs;")
+    conn.execute("LOAD httpfs;")
+    conn.execute(f"SET s3_region='{region}';")
+    conn.execute("SET s3_use_ssl=true;")
     
-    try:
-        batches = ds.to_batches()
-    except Exception as e:
-        exc_info = sys.exc_info()[0]
-        catch_column_filter_error(exc_info,e)
-        
-    non_empty_batches = (b for b in batches if b.num_rows > 0)
+    path = path + '*.parquet'
     
-    def filter_batches(batches):
-        for b in batches:
-            yield evaluate_filter_structure(b,filters)
+    # Select all if no selections, otherwise join selections together, exclude geometry column and cast it as text column
+    column_select = "*" if columns is None else ", ".join(columns)
     
-    # generate results from complex filters(if needed)
-    if filters:
-        filtered_batches = filter_batches(non_empty_batches)
-    else:
-        filtered_batches = non_empty_batches
+    # Construct the main query
+    query = f"""
+        SELECT {column_select}
+        FROM read_parquet('{path}')
+    """
+    df = conn.execute(query).df()
     
-    schema = ds.schema
-    reader = RecordBatchReader.from_batches(schema, filtered_batches)
-    df = reader.read_pandas()
-    if columns:
-        df = df[columns]
+    conn.close()
+    
     return df
 
-def _get_gdf_from_bbox(release:str, bbox:tuple[float,float,float,float], columns:list[str], filters: FilterStructure, prefix: str, path: str, region: str):
+def _get_gdf_from_bbox(release:str, bbox:tuple[float,float,float,float], columns:list[str], filters: str, prefix: str, path: str, region: str):
     """Helper function to get a geodataframe from a bounding box."""
     main_path = path.format(release=release) + prefix
-    gdf = read_geoparquet_arrow(main_path, region, bbox, columns=columns, filters=filters)
+    gdf = read_geoparquet_duckdb(main_path, region, bbox, columns=columns, filters=filters)
     return gdf
 
 def from_address(address: str | tuple[float,float], prefix: str, main_path: str, region: str,
-            release: str, columns: list[str]| None = None, filters: FilterStructure| None = None,
+            release: str, columns: list[str]| None = None, filters: str | None = None,
             distance: float = 500, unit: str = "m") -> GeoDataFrame:
     """
     Wrapper to geocode an address and fetch the geoparquet data within the address's area.
@@ -215,8 +180,8 @@ def from_address(address: str | tuple[float,float], prefix: str, main_path: str,
         Release version
     columns : list, optional
         Columns to select
-    filters : FilterStructure, optional
-        Filter expression
+    filters : str, optional
+        DuckDB SQL expression
     distance : float, default 500
         Buffer distance
     unit : str, default 'm'
@@ -232,7 +197,7 @@ def from_address(address: str | tuple[float,float], prefix: str, main_path: str,
     return gdf
     
 def from_place(address: str, prefix: str, main_path: str, region: str, release: str,
-            columns: list[str]| None=None, filters: FilterStructure| None=None) -> GeoDataFrame:
+            columns: list[str]| None=None, filters: str| None=None) -> GeoDataFrame:
     """
     Wrapper to geocode a place and fetch the geoparquet data within the place.
     
@@ -250,8 +215,8 @@ def from_place(address: str, prefix: str, main_path: str, region: str, release: 
         Release version
     columns : list, optional
         Columns to select
-    filters : FilterStructure, optional
-        Filter expression
+    filters : str, optional
+        DuckDB SQL expression
         
     Returns:
     --------
@@ -264,7 +229,7 @@ def from_place(address: str, prefix: str, main_path: str, region: str, release: 
     return filtered_gdf
 
 def from_bbox(bbox: tuple[float,float,float,float], prefix: str, main_path: str, region: str, 
-            release: str, columns: list[str]| None=None, filters: FilterStructure| None=None) -> GeoDataFrame:
+            release: str, columns: list[str]| None=None, filters: str | None=None) -> GeoDataFrame:
     """
     Wrapper to fetch the geoparquet data within the bounding box.
     
@@ -282,8 +247,8 @@ def from_bbox(bbox: tuple[float,float,float,float], prefix: str, main_path: str,
         Release version
     columns : list, optional
         Columns to select
-    filters : FilterStructure, optional
-        Filter expression
+    filters : str, optional
+        DuckDB SQL expression
         
     Returns:
     --------

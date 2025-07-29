@@ -3,8 +3,8 @@ from importlib import resources
 from typing import Union
 from geopandas import GeoDataFrame
 from pandas import DataFrame
-from ._utils import FilterStructure, wrap_functions_with_release
-from ._io_utils import from_address, from_bbox, from_place, read_parquet_arrow, schema_from_dataset
+from ._utils import wrap_functions_with_release
+from ._io_utils import from_address, from_bbox, from_place, read_parquet_duckdb, schema_from_dataset
 from ._category_finder import CategoryFinder
 
 
@@ -24,7 +24,7 @@ FSQ_LATEST_RELEASE = "2025-07-08"
 
 def foursquare_places_from_address(address: str | tuple[float,float],
                                     columns: list[str] | None = None,
-                                    filters: FilterStructure | None = None,
+                                    filters: str | None = None,
                                     distance: float = 500,
                                     unit: str = "m",
                                     release: str = FSQ_LATEST_RELEASE) -> GeoDataFrame:
@@ -37,10 +37,8 @@ def foursquare_places_from_address(address: str | tuple[float,float],
         The addres or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to retrieve from the dataset.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results. 
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     distance : float, default 500
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, default "m"
@@ -58,7 +56,7 @@ def foursquare_places_from_address(address: str | tuple[float,float],
 
 def foursquare_places_from_place(address: str,
                                     columns: list[str] | None = None,
-                                    filters: FilterStructure = None,
+                                    filters: str = None,
                                     release: str = FSQ_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieves Foursquare places data for a specific place identified by its address or place name.
@@ -69,10 +67,8 @@ def foursquare_places_from_place(address: str,
         The address or identifier of the place to retrieve data for.
     columns : list[str] | None, optional
         Specific columns to retrieve from the dataset.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, default FSQ_LATEST_RELEASE
         Dataset release version to use. Defaults to the latest version.
         
@@ -86,7 +82,7 @@ def foursquare_places_from_place(address: str,
 
 def foursquare_places_from_bbox(bbox: tuple[float, float, float, float],
                                 columns: list[str] | None = None,
-                                filters: FilterStructure | None = None,
+                                filters: str | None = None,
                                 release: str = FSQ_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieves Foursquare places data within a specified bounding box.
@@ -97,10 +93,8 @@ def foursquare_places_from_bbox(bbox: tuple[float, float, float, float],
         Bounding box coordinates in the format (min_x, min_y, max_x, max_y).
     columns : list[str] | None, optional
         Specific columns to retrieve from the dataset. 
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, default FSQ_LATEST_RELEASE
         Dataset release version to use. Defaults to the latest version.
         
@@ -113,7 +107,7 @@ def foursquare_places_from_bbox(bbox: tuple[float, float, float, float],
 
 
 def get_categories(columns: list[str] | None = None,
-                    filters: FilterStructure | None = None,
+                    filters: str | None = None,
                     release: str = FSQ_LATEST_RELEASE) -> DataFrame:
     """
     Retrieves Foursquare place categories data.
@@ -122,10 +116,8 @@ def get_categories(columns: list[str] | None = None,
     ----------
     columns : list[str] | None, optional
         Specific columns to retrieve from the dataset.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, default FSQ_LATEST_RELEASE
         Dataset release version to use. Defaults to the latest version.
         
@@ -137,10 +129,10 @@ def get_categories(columns: list[str] | None = None,
     Notes
     -----
     This function constructs the data path using Foursquare-specific constants and
-    retrieves the categories data using read_parquet_arrow.
+    retrieves the categories data using read_parquet_duckdb.
     """
     path = FSQ_MAIN_PATH.format(release=release) + FSQ_CATEGORIES_PREFIX
-    return read_parquet_arrow(path, FSQ_REGION, columns, filters)
+    return read_parquet_duckdb(path, FSQ_REGION, columns, filters)
 
 def find_categories(search: str, num_results: int = 5, exact_match: bool=False,verbose: bool=False,as_df: bool= False) -> Union[list[str],DataFrame]:
     """
@@ -190,9 +182,9 @@ def _check_release(release: str):
     if release not in folders:
         raise ValueError(f"Invalid release: {release}")
     
-def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> str:
+def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> DataFrame:
     """
-    Get Arrow schema for the given dataset. Set categories to True if you want to get the categories instead of the places schema.
+    Get DuckDB schema for the given dataset. Set categories to True if you want to get the categories instead of the places schema.
 
     Parameters
     ----------
@@ -203,7 +195,7 @@ def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> str:
     Returns
     -------
     str
-        String representation of PyArrow schema of dataset
+        str representation of DuckDB schema of dataset
     """
     path = FSQ_MAIN_PATH.format(release=release).replace("s3://", "") 
     if categories:
