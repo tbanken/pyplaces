@@ -74,9 +74,9 @@ def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float
     xmin, ymin, xmax, ymax = bbox
     path = path + '*.parquet'
     
-    metadata_query = """
+    metadata_query = f"""
                     SELECT decode(key) as 'key', decode(value) as 'value'
-                    FROM parquet_kv_metadata('s3://overturemaps-us-west-2/release/2025-07-23.0/theme=places/type=place/*.parquet')
+                    FROM parquet_kv_metadata('{path}')
                     WHERE key = 'geo' 
                     LIMIT 1;
                     """
@@ -105,8 +105,8 @@ def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float
     try:
         df = conn.execute(query).df()
     except Exception as e:
-        # print(e)
-        raise ValueError("Filter or Column error. Either the filter is not formatted properly, or the wrong column/value name is used.") from e
+        raise e
+        # raise ValueError("Filter or Column error. Either the filter is not formatted properly, or the wrong column/value name is used.") from e
         
     
     conn.close()
