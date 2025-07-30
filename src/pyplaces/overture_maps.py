@@ -4,7 +4,7 @@ from uuid import uuid4
 from typing import Union
 from geopandas import GeoDataFrame
 from pandas import read_csv, DataFrame
-from ._utils import FilterStructure, wrap_functions_with_release
+from ._utils import wrap_functions_with_release
 from ._io_utils import from_address, from_bbox, from_place, schema_from_dataset
 from ._category_finder import CategoryFinder
 
@@ -27,7 +27,7 @@ OVERTURE_CATEGORIES_URL = "https://raw.githubusercontent.com/OvertureMaps/schema
 
 def overture_places_from_address(address: str | tuple[float,float],
                                 columns: list[str]| None = None,
-                                filters: FilterStructure | None = None,
+                                filters: str | None = None,
                                 distance: float = 500 ,
                                 unit: str = "m" ,
                                 release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
@@ -40,10 +40,8 @@ def overture_places_from_address(address: str | tuple[float,float],
         The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     distance : float, optional
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
@@ -58,7 +56,7 @@ def overture_places_from_address(address: str | tuple[float,float],
     """
     return from_address(address,OVERTURE_PLACES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
 
-def overture_places_from_place(address: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
+def overture_places_from_place(address: str,columns: list[str]| None=None,filters: str| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
     """
     Retrieve places data from Overture by its address or place name.
     
@@ -68,10 +66,8 @@ def overture_places_from_place(address: str,columns: list[str]| None=None,filter
         The place name to search within
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -82,7 +78,7 @@ def overture_places_from_place(address: str,columns: list[str]| None=None,filter
     """
     return from_place(address,OVERTURE_PLACES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_places_from_bbox(bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
+def overture_places_from_bbox(bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: str| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
     """
     Retrieve places data from Overture within a bounding box.
     
@@ -92,10 +88,8 @@ def overture_places_from_bbox(bbox: tuple[float,float,float,float],columns: list
         The bounding box coordinates (min_x, min_y, max_x, max_y)
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -106,7 +100,7 @@ def overture_places_from_bbox(bbox: tuple[float,float,float,float],columns: list
     """
     return from_bbox(bbox,OVERTURE_PLACES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_buildings_from_address(address: str | tuple[float,float],columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,building_part: bool=False) -> GeoDataFrame:
+def overture_buildings_from_address(address: str | tuple[float,float],columns: list[str]| None = None,filters: str| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,building_part: bool=False) -> GeoDataFrame:
     """
     Retrieve buildings data from Overture in a bounding box around a specified address.
     
@@ -116,10 +110,8 @@ def overture_buildings_from_address(address: str | tuple[float,float],columns: l
         The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     distance : float, optional
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
@@ -140,7 +132,7 @@ def overture_buildings_from_address(address: str | tuple[float,float],columns: l
         prefix = OVERTURE_BUILDINGS_PREFIX 
     return from_address(address,prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
 
-def overture_buildings_from_place(address: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE,building_part: bool=False)-> GeoDataFrame:
+def overture_buildings_from_place(address: str,columns: list[str]| None=None,filters: str| None=None,release: str=OVERTURE_LATEST_RELEASE,building_part: bool=False)-> GeoDataFrame:
     """
     Retrieve buildings data from Overture by its address or place name.
     
@@ -150,10 +142,8 @@ def overture_buildings_from_place(address: str,columns: list[str]| None=None,fil
         The place name to search within
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
     building_part : bool, optional
@@ -170,7 +160,7 @@ def overture_buildings_from_place(address: str,columns: list[str]| None=None,fil
         prefix = OVERTURE_BUILDINGS_PREFIX
     return from_place(address,prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_buildings_from_bbox(bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE,building_part: bool=False)-> GeoDataFrame:
+def overture_buildings_from_bbox(bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: str| None=None,release: str=OVERTURE_LATEST_RELEASE,building_part: bool=False)-> GeoDataFrame:
     """
     Retrieve buildings data from Overture within a bounding box.
     
@@ -180,10 +170,8 @@ def overture_buildings_from_bbox(bbox: tuple[float,float,float,float],columns: l
         The bounding box coordinates (min_x, min_y, max_x, max_y)
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
     building_part : bool, optional
@@ -200,7 +188,7 @@ def overture_buildings_from_bbox(bbox: tuple[float,float,float,float],columns: l
         prefix = OVERTURE_BUILDINGS_PREFIX
     return from_bbox(bbox,prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_transportation_from_address(address: str | tuple[float,float],columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,connector:bool=False) -> GeoDataFrame:
+def overture_transportation_from_address(address: str | tuple[float,float],columns: list[str]| None = None,filters: str| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE,connector:bool=False) -> GeoDataFrame:
     """
     Retrieve transportation data from Overture in a bounding box around a specified address.
     
@@ -210,10 +198,8 @@ def overture_transportation_from_address(address: str | tuple[float,float],colum
         The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     distance : float, optional
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
@@ -234,7 +220,7 @@ def overture_transportation_from_address(address: str | tuple[float,float],colum
         prefix = OVERTURE_TRANSPORTATION_SEGMENT_PREFIX
     return from_address(address,prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
 
-def overture_transportation_from_place(address: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE,connector:bool=False)-> GeoDataFrame:
+def overture_transportation_from_place(address: str,columns: list[str]| None=None,filters: str| None=None,release: str=OVERTURE_LATEST_RELEASE,connector:bool=False)-> GeoDataFrame:
     """
     Retrieve transportation data from Overture by its address or place name.
     
@@ -244,10 +230,8 @@ def overture_transportation_from_place(address: str,columns: list[str]| None=Non
         The place name to search within
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
     connector : bool, optional
@@ -264,7 +248,7 @@ def overture_transportation_from_place(address: str,columns: list[str]| None=Non
         prefix = OVERTURE_TRANSPORTATION_SEGMENT_PREFIX
     return from_place(address,prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_transportation_from_bbox(bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: FilterStructure | None=None,release: str=OVERTURE_LATEST_RELEASE,connector:bool=False)-> GeoDataFrame:
+def overture_transportation_from_bbox(bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: str | None=None,release: str=OVERTURE_LATEST_RELEASE,connector:bool=False)-> GeoDataFrame:
     """
     Retrieve transportation data from Overture within a bounding box.
     
@@ -274,10 +258,8 @@ def overture_transportation_from_bbox(bbox: tuple[float,float,float,float],colum
         The bounding box coordinates (min_x, min_y, max_x, max_y)
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
     connector : bool, optional
@@ -294,7 +276,7 @@ def overture_transportation_from_bbox(bbox: tuple[float,float,float,float],colum
         prefix = OVERTURE_TRANSPORTATION_SEGMENT_PREFIX
     return from_bbox(bbox,prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
     
-def overture_addresses_from_address(address: str | tuple[float,float],columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
+def overture_addresses_from_address(address: str | tuple[float,float],columns: list[str]| None = None,filters: str| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieve address data from Overture in a bounding box around a specified address.
     
@@ -304,10 +286,8 @@ def overture_addresses_from_address(address: str | tuple[float,float],columns: l
         The address or (longitude, latitude) tuple to search for nearby places.
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     distance : float, optional
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
@@ -322,7 +302,7 @@ def overture_addresses_from_address(address: str | tuple[float,float],columns: l
     """
     return from_address(address,OVERTURE_ADDRESSES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
 
-def overture_addresses_from_place(address: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
+def overture_addresses_from_place(address: str,columns: list[str]| None=None,filters: str| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
     """
     Retrieve address data from Overture by its address or place name.
     
@@ -332,10 +312,8 @@ def overture_addresses_from_place(address: str,columns: list[str]| None=None,fil
         The place name to search within
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -346,7 +324,7 @@ def overture_addresses_from_place(address: str,columns: list[str]| None=None,fil
     """
     return from_place(address,OVERTURE_ADDRESSES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_addresses_from_bbox(bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
+def overture_addresses_from_bbox(bbox: tuple[float,float,float,float],columns: list[str]| None=None,filters: str| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
     """
     Retrieve address data from Overture within a bounding box.
     
@@ -356,10 +334,8 @@ def overture_addresses_from_bbox(bbox: tuple[float,float,float,float],columns: l
         The bounding box coordinates (min_x, min_y, max_x, max_y)
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -370,7 +346,7 @@ def overture_addresses_from_bbox(bbox: tuple[float,float,float,float],columns: l
     """
     return from_bbox(bbox,OVERTURE_ADDRESSES_PREFIX,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
 
-def overture_base_from_address(address: str | tuple[float,float],base_type: str,columns: list[str]| None = None,filters: FilterStructure| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
+def overture_base_from_address(address: str | tuple[float,float],base_type: str,columns: list[str]| None = None,filters: str| None = None,distance: float = 500 ,unit: str = "m" ,release: str = OVERTURE_LATEST_RELEASE) -> GeoDataFrame:
     """
     Retrieve base data of a specific type from Overture in a bounding box around a specified address.
     
@@ -382,10 +358,8 @@ def overture_base_from_address(address: str | tuple[float,float],base_type: str,
         The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water".
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     distance : float, optional
         Radius of the bounding box around the address. Defaults to 500 meters.
     unit : str, optional
@@ -403,7 +377,7 @@ def overture_base_from_address(address: str | tuple[float,float],base_type: str,
     return from_address(address,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters,distance,unit)
     
 
-def overture_base_from_place(address: str,base_type: str,columns: list[str]| None=None,filters: FilterStructure | None =None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
+def overture_base_from_place(address: str,base_type: str,columns: list[str]| None=None,filters: str | None =None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame:
     """
     Retrieve base data of a specific type from Overture by its address or place name.
     
@@ -415,10 +389,8 @@ def overture_base_from_place(address: str,base_type: str,columns: list[str]| Non
         The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water"
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -432,7 +404,7 @@ def overture_base_from_place(address: str,base_type: str,columns: list[str]| Non
     return from_place(address,complete_prefix,OVERTURE_MAIN_PATH,OVERTURE_REGION,release,columns,filters)
     
 
-def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,columns: list[str]| None=None,filters: FilterStructure| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame  :
+def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,columns: list[str]| None=None,filters: str| None=None,release: str=OVERTURE_LATEST_RELEASE)-> GeoDataFrame  :
     """
     Retrieve base data of a specific type from Overture within a bounding box.
     
@@ -444,10 +416,8 @@ def overture_base_from_bbox(bbox: tuple[float,float,float,float],base_type: str,
         The type of base data to retrieve. One of: "bathymetry","infrastructure","land","land_cover",land_use","water"
     columns : list[str] | None, optional
         Specific columns to include in the result.
-    filters : FilterStructure | None, optional
-        Filter criteria to apply to the results.
-        Should be a list in the format(column,operator,value)
-        Supported operators are: "==", "!=", "<", "<=", ">", ">=","contains"
+    filters : str | None, optional
+        DuckDB SQL expression
     release : str, optional
         Dataset release version to use. Defaults to the latest version.
         
@@ -542,7 +512,7 @@ def get_schema(dataset_name : str,
                 connector : bool = False,
                 building_part : bool = False,base_type : str = None,release: str = OVERTURE_LATEST_RELEASE):
     """
-    Get Arrow schema for the given dataset.
+    Get DuckDB schema for the given dataset.
 
     Parameters
     ----------
@@ -559,7 +529,7 @@ def get_schema(dataset_name : str,
     Returns
     -------
     str
-        String representation of PyArrow schema of dataset
+        String representation of DuckDB schema of dataset
     """
     datasets = ["buildings","transportation","base","places","addresses"]
     with resources.files("pyplaces").joinpath("releases/overture/base_types.txt").open( "r",encoding="utf-8-sig") as f:

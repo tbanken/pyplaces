@@ -46,6 +46,31 @@ pyplaces.foursquare_open_places
 Formatting parameters
 *********************
 
+Filtering and Accessing Dictionary Columns
+============================
+
+The filter structure is based off of DuckDB comparision functionality which can be found `here. <https://duckdb.org/docs/stable/sql/expressions/overview>`_
+**This is only the raw SQL, no need to insert "WHERE." Anything that can be in the "WHERE" statement can go into this filter**
+
+Certain columns within the datasets will be a dictionary, most notably, the Overture Places column "categories."
+This column is set up as a dictionary: :code:`{"primary":"<category>","secondary":["<category2>","<category3>",...]}`
+
+In order to filter by the dictionary values, use a "." in your filter. More information on that `here. <https://duckdb.org/docs/stable/sql/data_types/struct.html>`_
+
+.. _categories:
+
+Finding Categories
+=======
+
+Finding categories for a place can be challenging because of the accessibility of the category names and codes.(which can be found below)
+
+The :code:`find_categories` function for each dataset can help. You can enter in a search query(e.g., finding hardware stores by searching "hardware store").
+It uses exact and semantic matching to find relevant categories to the search. The quality of the results depend on the detail of your search. 
+
+* `Foursquare Open Places Categories <https://docs.foursquare.com/data-products/docs/categories#places-open-source--propremium-flat-file>`_
+* `Overture Places Categories <https://github.com/OvertureMaps/schema/blob/main/docs/schema/concepts/by-theme/places/overture_categories.csv>`_
+
+
 .. _versions:
 
 Versions
@@ -128,108 +153,3 @@ Foursquare Open Places Releases
 +-------------+
 | 2024-11-19  |
 +-------------+
-
-.. _categories:
-
-Finding Categories
-=======
-
-Finding categories for a place can be challenging because of the accessibility of the category names and codes.(which can be found below)
-
-The :code:`find_categories` function for each dataset can help. You can enter in a search query(e.g., finding hardware stores by searching "hardware store").
-It uses exact and semantic matching to find relevant categories to the search. The quality of the results depend on the detail of your search. 
-
-* `Foursquare Open Places Categories <https://docs.foursquare.com/data-products/docs/categories#places-open-source--propremium-flat-file>`_
-* `Overture Places Categories <https://github.com/OvertureMaps/schema/blob/main/docs/schema/concepts/by-theme/places/overture_categories.csv>`_
-
-
-.. _filters:
-Filters
-=======
-
-
-Filters consist of the column that needs filtering, an operator,
-and a value to filter on.
-
-.. note::
-    "contains" operator is for lists only. Future updates will include a "contains" operator for text fields
-
-Basic Filter Structure
-======================
-
-Each filter has three parts:
-
-.. code-block::
-
-    (column_name, operator, value)
-
-Examples:
-
-* ``("id", "==", 5)`` - Find records where id equals 5
-* ``("score", ">", 90)`` - Find records where score is greater than 90
-* ``("string_list", "contains", "apple")`` - Find records containing "apple" in string_list column
-
-Combining Filters with OR and AND
-=================================
-
-OR Relationships
-~~~~~~~~~~~~~~~~
-
-To find records matching ANY condition, place filters at the same level in a list:
-
-.. code-block::
-
-    [condition1, condition2, condition3]
-
-Example: Find records with id=1 OR id=5
-
-.. code-block::
-
-    [("id", "==", 1), ("id", "==", 5)]
-
-AND Relationships
-~~~~~~~~~~~~~~~~
-
-To find records matching ALL conditions, nest filters in a list:
-
-.. code-block::
-
-    [[condition1, condition2, condition3]]
-
-Example: Find records with score \> 90 AND active=True
-
-.. code-block::
-
-    [[("score", "\>", 90), ("active", "==", True)]]
-
-Building Complex Filters
------------------------
-
-Combine AND and OR by nesting lists appropriately:
-
-Example 1: (A OR B) AND C
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block::
-
-    [[("id", "==", 1), ("id", "==", 5)], ("active", "==", True)]
-
-Finds records where (id=1 OR id=5) AND active=True
-
-Example 2: A AND (B OR C)
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block::
-
-    [("active", "==", True), [("score", "\>", 90), ("count", "\>", 10)]]
-
-Finds records where active=True AND (score \>90 OR count\>10)
-
-Accessing Dictionary Columns
-============================
-
-Certain columns within the datasets will be a dictionary, most notably, the Overture Places column "categories."
-This column is set up as a dictionary: :code:`{"primary":"<category>","secondary":["<category2>","<category3>",...]}`
-
-In order to filter by the dictionary values, use a "." in your filter. 
-For example, to filter by primary category by category "eat_and_drink": :code:`[("categories.primary","==","eat_and_drink")]`
