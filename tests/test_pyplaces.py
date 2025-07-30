@@ -1,7 +1,5 @@
 import pytest
 from pyplaces import foursquare_open_places as fsq, overture_maps as ov
-from pyplaces._errors import UnsupportedOperatorError
-
 
 user_optional_valid = {"columns":["confidence","names"],"filters":("confidence",">",0.9),
                     "distance":1,"unit":"km"}
@@ -45,9 +43,6 @@ def test_foursquare_places():
         fsq.foursquare_places_from_address(user_provided_valid["address"],user_optional_invalid["columns"])
         #assert invalid field
         fsq.foursquare_places_from_address(user_provided_valid["address"],filters=user_optional_invalid["filters_invalid_field"])
-    # with pytest.raises(UnsupportedOperatorError):
-    #     #assert invalid operator
-    #     fsq.foursquare_places_from_address(user_provided_valid["address"],filters=user_optional_invalid["filters_invalid_op"])
 
     #assert correct case, all valid inputs. check that schema is correct for each
     cols1=fsq.foursquare_places_from_address(user_provided_valid["address"]).columns.to_list()
