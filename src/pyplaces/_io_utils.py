@@ -100,7 +100,14 @@ def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float
         FROM read_parquet('{path}')
         WHERE {spatial_filter}
     """
-    df = conn.execute(query).df()
+    if filters:
+        query = query + f" AND {filters}"
+    try:
+        df = conn.execute(query).df()
+    except Exception as e:
+        # print(e)
+        raise ValueError("Filter or Column error. Either the filter is not formatted properly, or the wrong column/value name is used.") from e
+        
     
     conn.close()
     
@@ -148,8 +155,15 @@ def read_parquet_duckdb(path: str, region: str,
         SELECT {column_select}
         FROM read_parquet('{path}')
     """
-    df = conn.execute(query).df()
-    
+    if filters:
+        query = query + f" AND {filters}"
+        
+    try:
+        df = conn.execute(query).df()
+    except Exception as e:
+        # print(e)
+        raise ValueError("Filter or Column error. Either the filter is not formatted properly, or the wrong column/value name is used.") from e
+        
     conn.close()
     
     return df

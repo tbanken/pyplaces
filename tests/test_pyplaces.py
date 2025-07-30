@@ -1,11 +1,11 @@
 import pytest
 from pyplaces import foursquare_open_places as fsq, overture_maps as ov
 
-user_optional_valid = {"columns":["confidence","names"],"filters":("confidence",">",0.9),
+user_optional_valid = {"columns":["confidence","names"],"filters":"confidence > 0.9",
                     "distance":1,"unit":"km"}
 user_provided_valid = {"address":"204 Hemenway Street","place":"Jamaica Plain, MA","bbox":(-71.11088398563271, 42.32145496739517, -71.0987557723746, 42.33045192410487)}
-user_optional_invalid = {"columns":["sfdsfd"],"filters_invalid_op":("latitude","(",0.9),"filters_invalid_field":("fdscds","<",0.9),
-            "filters_invalid_value":("confidence", "<", "a"),"unit":"sfd","release":"2025-10-23"}
+user_optional_invalid = {"columns":["sfdsfd"],"filters_invalid_op":"latitude ( 0.9","filters_invalid_field":"fdscds < 0.9",
+            "filters_invalid_value":"confidence < a","unit":"sfd","release":"2025-10-23"}
 user_provided_invalid = {"address":"fdlksjfld","bbox":(-181,-91, 181, 91),"point":(-181, -91)}
 
 def test_foursquare_places():
