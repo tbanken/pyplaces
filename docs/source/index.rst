@@ -39,7 +39,7 @@ To access places, all you need is a place, address, or bounding box: ::
 
 Additionally, you can:
 
-* :ref:`Select and filter on columns using the \(column,operator,value\) syntax <filters>`
+* :ref:`Select and filter on columns using SQL`
 * :ref:`Get data from past releases <versions>`
 * :ref:`Inspect dataset schemas <schemas>`
 * :ref:`Find relevant category names for retrieving places data <categories>`
