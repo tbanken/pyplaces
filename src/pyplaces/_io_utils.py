@@ -156,7 +156,7 @@ def read_parquet_duckdb(path: str, region: str,
         FROM read_parquet('{path}')
     """
     if filters:
-        query = query + f" AND {filters}"
+        query = query + f" WHERE {filters}"
         
     try:
         df = conn.execute(query).df()
