@@ -29,12 +29,13 @@ def schema_from_dataset(s3_path,region):
     conn.execute("SET s3_use_ssl=true;")
     
     s3_path = s3_path + '*.parquet'
+    
     schema_query = f"""
-        SELECT DISTINCT name as 'Column' ,type as 'Type'
-        FROM parquet_schema('{s3_path}');
+        DESCRIBE SELECT *
+        FROM '{s3_path}';
         """
-    df = conn.execute(schema_query).df()
-    df = df.sort_values("Column").reset_index(drop="index")
+    df = conn.execute(schema_query).df().iloc[:,0:2]
+    conn.close()
     return df
 
 def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float,float], 

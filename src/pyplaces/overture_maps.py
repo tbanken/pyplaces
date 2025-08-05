@@ -545,7 +545,7 @@ def get_schema(dataset_name : str,
     elif base_type and base_type not in base_types:
         raise KeyError(f"No base type:{dataset_name} found")
     
-    path = OVERTURE_MAIN_PATH.format(release=release).replace("s3://", "") 
+    path = OVERTURE_MAIN_PATH.format(release=release)
     if dataset_name == "places":
         path = path + OVERTURE_PLACES_PREFIX
     elif dataset_name == "addresses":

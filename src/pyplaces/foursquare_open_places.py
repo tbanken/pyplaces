@@ -197,7 +197,7 @@ def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> DataFrame:
     str
         str representation of DuckDB schema of dataset
     """
-    path = FSQ_MAIN_PATH.format(release=release).replace("s3://", "") 
+    path = FSQ_MAIN_PATH.format(release=release) 
     if categories:
         path = path + FSQ_CATEGORIES_PREFIX
     else:
