@@ -22,29 +22,10 @@ Additional schema and dataset information can be found below.
 * `Foursquare Open Places Guide <https://docs.foursquare.com/data-products/docs/fsq-places-open-source>`_
 * `Foursquare Open Places Schemas <https://docs.foursquare.com/data-products/docs/places-os-data-schema>`_
 
-
-Modules
-*******
-
-.. _pyplaces-overture_maps-module:
-
-pyplaces.overture_maps
-======================
-
-.. automodule:: pyplaces.overture_maps
-    :members:
-
-.. _pyplaces-foursquare_open_places-module:
-
-pyplaces.foursquare_open_places
-===============================
-
-.. automodule:: pyplaces.foursquare_open_places
-    :members:
-
-
 Formatting parameters
 *********************
+
+.. _filtering:
 
 Filtering and Accessing Dictionary Columns
 ============================
@@ -153,3 +134,25 @@ Foursquare Open Places Releases
 +-------------+
 | 2024-11-19  |
 +-------------+
+
+
+Modules
+*******
+
+.. _pyplaces-overture_maps-module:
+
+pyplaces.overture_maps
+======================
+
+.. automodule:: pyplaces.overture_maps
+    :members:
+
+.. _pyplaces-foursquare_open_places-module:
+
+pyplaces.foursquare_open_places
+===============================
+
+.. automodule:: pyplaces.foursquare_open_places
+    :members:
+
+
