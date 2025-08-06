@@ -194,8 +194,8 @@ def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> DataFrame:
             Release version to use, defaults to the latest version.
     Returns
     -------
-    str
-        str representation of DuckDB schema of dataset
+    DataFrame
+        DataFrame with columns showing DuckDB types
     """
     path = FSQ_MAIN_PATH.format(release=release) 
     if categories:
@@ -203,7 +203,7 @@ def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> DataFrame:
     else:
         path = path + FSQ_PLACES_PREFIX
     schema = schema_from_dataset(path,FSQ_REGION)
-    return schema.to_string()
+    return schema
 
 
 __all__ = ["foursquare_places_from_address", "foursquare_places_from_bbox", "foursquare_places_from_place", "get_categories","get_schema","find_categories"]

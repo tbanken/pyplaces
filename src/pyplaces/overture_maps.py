@@ -510,7 +510,7 @@ def get_categories() -> DataFrame:
 
 def get_schema(dataset_name : str,
                 connector : bool = False,
-                building_part : bool = False,base_type : str = None,release: str = OVERTURE_LATEST_RELEASE):
+                building_part : bool = False,base_type : str = None,release: str = OVERTURE_LATEST_RELEASE) -> DataFrame:
     """
     Get DuckDB schema for the given dataset.
 
@@ -528,8 +528,8 @@ def get_schema(dataset_name : str,
             Release version to use, defaults to the latest version.
     Returns
     -------
-    str
-        String representation of DuckDB schema of dataset
+    DataFrame
+        DataFrame with columns showing DuckDB types
     """
     datasets = ["buildings","transportation","base","places","addresses"]
     with resources.files("pyplaces").joinpath("releases/overture/base_types.txt").open( "r",encoding="utf-8-sig") as f:
@@ -564,7 +564,7 @@ def get_schema(dataset_name : str,
             path = path + OVERTURE_TRANSPORTATION_SEGMENT_PREFIX
     # print(path)
     schema = schema_from_dataset(path,OVERTURE_REGION)
-    return schema.to_string()
+    return schema
 
 def find_categories(search: str, num_results: int = 5, exact_match: bool=False,verbose: bool=False,as_df: bool= False) -> Union[list[str],DataFrame]:
     """
