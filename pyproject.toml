@@ -32,6 +32,7 @@ dependencies = [
 "osmnx>=2.0.2,<3",
 "typing-extensions",
 "sentence-transformers<=4.1.0",
+"pyarrow<=20.0.0",
 "ipywidgets",
 "duckdb"]
 
