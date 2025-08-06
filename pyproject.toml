@@ -31,7 +31,7 @@ dependencies = [
 "pyproj>=3.7.1,<4",
 "osmnx>=2.0.2,<3",
 "typing-extensions",
-"sentence-transformers",
+"sentence-transformers<=4.1.0",
 "ipywidgets",
 "duckdb"]
 
