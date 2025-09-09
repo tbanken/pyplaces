@@ -25,7 +25,7 @@ To access any places, all you need is a place, address, or bounding box:
     hemenway_st_places = foursquare_places_from_address("204 Hemenway Street, Boston, MA")
 
 Additionally, you can:
-- [Select and filter on columns using the \(column,operator,value\) syntax](https://pyplaces.readthedocs.io/en/latest/usage.html#filters)
+- [Select and filter on columns](https://pyplaces.readthedocs.io/en/latest/usage.html#filters)
 - [Get data from past releases](https://pyplaces.readthedocs.io/en/latest/usage.html#versions)
 - [Inspect dataset schemas](https://pyplaces.readthedocs.io/en/latest/usage.html#schemas)
 - [Find relevant category names for retrieving places data](https://pyplaces.readthedocs.io/en/latest/usage.html#categories)
