@@ -1,5 +1,7 @@
 """Functions to fetch  geoparquet data from Overture Maps on AWS"""
 from importlib import resources
+import requests
+from io import StringIO
 from uuid import uuid4
 from typing import Union
 from geopandas import GeoDataFrame
@@ -8,12 +10,47 @@ from ._utils import wrap_functions_with_release
 from ._io_utils import from_address, from_bbox, from_place, schema_from_dataset
 from ._category_finder import CategoryFinder
 
+OVERTURE_CATEGORIES_URL = "https://raw.githubusercontent.com/OvertureMaps/schema/refs/heads/main/docs/schema/concepts/by-theme/places/overture_categories.csv"
+OVERTURE_VERSIONS_URL = "https://github.com/tbanken/pyplaces/blob/main/src/pyplaces/releases/overture/releases.txt"
 
-#TODO latest release reads from text file
+def _check_or_get_release(release: str = None, url = OVERTURE_VERSIONS_URL,latest: bool = False):
+    """
+    Validate if the provided Overture release is valid.
+    
+    Parameters
+    ----------
+    release : str
+        The release version to validate
+        
+    Raises
+    ------
+    ValueError
+        If the release version is not valid
+    """
+    raw_url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
+    
+    try:
+        # Fetch the file content
+        response = requests.get(raw_url,timeout=10)
+        response.raise_for_status()
+        file = StringIO(response.text)
+        
+        folders = [line.strip(" \n/") for line in file]
+            
+    except requests.RequestException as e:
+        print(f"Error fetching file: {e}, using local version check")
+        with resources.files("pyplaces").joinpath("releases/overture/releases.txt").open( "r",encoding="utf-8-sig") as file:
+            folders = [line.strip(" \n/") for line in file]
+    if latest:
+        return folders[-1]
+    if release not in folders:
+        raise ValueError(f"Invalid release:{release}")
+
+OVERTURE_LATEST_RELEASE = _check_or_get_release(latest=True)
+
 OVERTURE_MAIN_PATH = 's3://overturemaps-us-west-2/release/{release}/'
 OVERTURE_BUCKET = 'overturemaps-us-west-2'
 OVERTURE_REGION = 'us-west-2'
-OVERTURE_LATEST_RELEASE = "2025-08-20.1"
 
 OVERTURE_PLACES_PREFIX = "theme=places/type=place/"
 OVERTURE_BUILDINGS_PREFIX = "theme=buildings/type=building/"
@@ -22,8 +59,6 @@ OVERTURE_ADDRESSES_PREFIX = "theme=addresses/type=address/"
 OVERTURE_TRANSPORTATION_SEGMENT_PREFIX = "theme=transportation/type=segment/"
 OVERTURE_TRANSPORTATION_CONNECTOR_PREFIX = "theme=transportation/type=connector/"
 OVERTURE_BASE_PREFIX = "theme=base/type={type}"
-
-OVERTURE_CATEGORIES_URL = "https://raw.githubusercontent.com/OvertureMaps/schema/refs/heads/main/docs/schema/concepts/by-theme/places/overture_categories.csv"
 
 def overture_places_from_address(address: str | tuple[float,float],
                                 columns: list[str]| None = None,
@@ -562,7 +597,6 @@ def get_schema(dataset_name : str,
             path = path + OVERTURE_TRANSPORTATION_CONNECTOR_PREFIX
         else:
             path = path + OVERTURE_TRANSPORTATION_SEGMENT_PREFIX
-    # print(path)
     schema = schema_from_dataset(path,OVERTURE_REGION)
     return schema
 
@@ -615,30 +649,11 @@ def _check_base_type(base_type):
     if base_type not in base_types:
         raise ValueError(f"Invalid base type:{base_type}")
     
-def _check_release(release):
-    """
-    Validate if the provided Overture release is valid.
-    
-    Parameters
-    ----------
-    release : str
-        The release version to validate
-        
-    Raises
-    ------
-    ValueError
-        If the release version is not valid
-    """
-    with resources.files("pyplaces").joinpath("releases/overture/releases.txt").open( "r",encoding="utf-8-sig") as f:
-        folders = [line.strip(" \n/") for line in f]
-    if release not in folders:
-        raise ValueError(f"Invalid release:{release}")
-    
 
-
+    
 __all__ = ["overture_addresses_from_address","overture_addresses_from_bbox","overture_addresses_from_place","overture_base_from_address", 
             "overture_base_from_bbox","overture_base_from_place","overture_buildings_from_address","overture_buildings_from_bbox",
             "overture_buildings_from_place","overture_places_from_address","overture_places_from_bbox","overture_places_from_place",
             "overture_transportation_from_address","overture_transportation_from_bbox","overture_transportation_from_place","get_schema","find_categories","get_categories"]
 
-wrap_functions_with_release(__name__, _check_release,__all__)
+wrap_functions_with_release(__name__, _check_or_get_release,__all__)
