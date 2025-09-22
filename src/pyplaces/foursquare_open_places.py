@@ -1,5 +1,7 @@
 """Functions to fetch geoparquet data from Foursquare Open Places on AWS"""
 from importlib import resources
+import requests
+from io import StringIO
 from typing import Union
 from geopandas import GeoDataFrame
 from pandas import DataFrame
@@ -7,14 +9,54 @@ from ._utils import wrap_functions_with_release
 from ._io_utils import from_address, from_bbox, from_place, read_parquet_duckdb, schema_from_dataset
 from ._category_finder import CategoryFinder
 
+FSQ_VERSIONS_URL = "https://github.com/tbanken/pyplaces/blob/main/src/pyplaces/releases/foursquare/releases.txt"
 
-#TODO latest release reads from text file
+def _check_or_get_release(release: str = None, url: str = FSQ_VERSIONS_URL ,latest: bool = False):
+    """
+    Validates if the specified Foursquare data release version exists.
+    
+    Parameters
+    ----------
+    release : str
+        The release version to validate.
+    
+    url : str
+        GitHub url to file version.
+        
+    Raises
+    ------
+    ValueError
+        If the specified release version does not exist in the available releases.
+    """
+    raw_url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
+    
+    try:
+        response = requests.get(raw_url,timeout=10)
+        response.raise_for_status()
+        file = StringIO(response.text)
+        
+        folders = [line.replace("dt=", "").strip(" \n/") for line in file]
+    except requests.RequestException as e:
+        print(f"Error fetching file: {e}, using local version check")
+        if latest:
+            print("Using local version file. Current release may not be up to date.")
+        with resources.files("pyplaces").joinpath("releases/foursquare/releases.txt").open("r", encoding="utf-8-sig") as file:
+            folders = [line.replace("dt=", "").strip(" \n/") for line in file]
+    folders.remove("vector-tiles")
+    if latest:
+        return folders[-1]
+    if release not in folders:
+        raise ValueError(f"Invalid release: {release}")
+    
+
+FSQ_LATEST_RELEASE = _check_or_get_release(latest=True)
+
 FSQ_MAIN_PATH = 's3://fsq-os-places-us-east-1/release/dt={release}/'
 FSQ_BUCKET = 'fsq-os-places-us-east-1'
 FSQ_REGION = 'us-east-1'
 FSQ_PLACES_PREFIX = "places/parquet/"
 FSQ_CATEGORIES_PREFIX = "categories/parquet/"
-FSQ_LATEST_RELEASE = "2025-08-07"
+# FSQ_LATEST_RELEASE = "2025-08-07"
 
 # FSQ_FUSED_MAIN_PATH = 's3://us-west-2.opendata.source.coop/fused/fsq-os-places/{release}/'
 # FSQ_FUSED_BUCKET = 's-west-2.opendata.source.coop'
@@ -163,25 +205,6 @@ def find_categories(search: str, num_results: int = 5, exact_match: bool=False,v
     matches = finder.suggest_categories(search,num_results,exact_match,verbose,as_df,hide_ids=False,list_return="",show_name_and_id=True)
     return matches
 
-def _check_release(release: str):
-    """
-    Validates if the specified Foursquare data release version exists.
-    
-    Parameters
-    ----------
-    release : str
-        The release version to validate.
-        
-    Raises
-    ------
-    ValueError
-        If the specified release version does not exist in the available releases.
-    """
-    with resources.files("pyplaces").joinpath("releases/foursquare/releases.txt").open("r", encoding="utf-8-sig") as f:
-        folders = [line.replace("dt=", "").strip(" \n/") for line in f]
-    if release not in folders:
-        raise ValueError(f"Invalid release: {release}")
-    
 def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> DataFrame:
     """
     Get DuckDB schema for the given dataset. Set categories to True if you want to get the categories instead of the places schema.
@@ -205,7 +228,6 @@ def get_schema(categories=False,release:str=FSQ_LATEST_RELEASE) -> DataFrame:
     schema = schema_from_dataset(path,FSQ_REGION)
     return schema
 
-
 __all__ = ["foursquare_places_from_address", "foursquare_places_from_bbox", "foursquare_places_from_place", "get_categories","get_schema","find_categories"]
 
-wrap_functions_with_release(__name__, _check_release,__all__)
+wrap_functions_with_release(__name__, _check_or_get_release,__all__)
