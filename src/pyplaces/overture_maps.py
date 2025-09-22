@@ -38,7 +38,10 @@ def _check_or_get_release(release: str = None, url = OVERTURE_VERSIONS_URL,lates
         folders = [line.strip(" \n/") for line in file]
             
     except requests.RequestException as e:
+        
         print(f"Error fetching file: {e}, using local version check")
+        if latest:
+            print("Using local version file. Current release may not be up to date.")
         with resources.files("pyplaces").joinpath("releases/overture/releases.txt").open( "r",encoding="utf-8-sig") as file:
             folders = [line.strip(" \n/") for line in file]
     if latest:
