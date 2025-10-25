@@ -1,16 +1,16 @@
 """Functions to fetch geoparquet data from OSM Layercake datasets"""
 from geopandas import GeoDataFrame
-from pandas import DataFrame
+from pandas import DataFrame, json_normalize, concat
 from ._io_utils import from_address, from_bbox, from_place, schema_from_dataset
 
 # OSM Layercake dataset URLs
-OSM_BASE_URL = "https://data.openstreetmap.us/layercake/"
-OSM_DATASETS = {
-    "buildings": f"{OSM_BASE_URL}buildings.parquet",
-    "highways": f"{OSM_BASE_URL}highways.parquet"
-}
+LAYERCAKE_BASE_URL = "https://data.openstreetmap.us/layercake/"
+# OSM_DATASETS = {
+#     "buildings": f"{LAYERCAKE_BASE_URL}buildings.parquet",
+#     "highways": f"{LAYERCAKE_BASE_URL}highways.parquet"
+# }
 
-def osm_buildings_from_address(address: str | tuple[float, float],
+def layercake_buildings_from_address(address: str | tuple[float, float],
                                 columns: list[str] | None = None,
                                 filters: str | None = None,
                                 distance: float = 500,
@@ -37,11 +37,18 @@ def osm_buildings_from_address(address: str | tuple[float, float],
     GeoDataFrame
         A GeoDataFrame containing OSM buildings data within the specified bounding box.
     """
-    return from_address(address, "", OSM_DATASETS["buildings"], None, 
-                    None, columns, filters, distance, unit)
+    gdf = from_address(address, "", LAYERCAKE_BASE_URL, None, 
+                    None, columns, filters, distance, unit,"buildings")
+    tags_df = json_normalize(gdf['tags'])
+    gdf = concat([
+        gdf.iloc[:, :2],           # First 2 columns
+        tags_df,                    # Unpacked tags
+        gdf.iloc[:, 2:].drop(columns=['tags'])  # Rest of columns (excluding tags)
+    ], axis=1)
+    return gdf
 
 
-def osm_buildings_from_place(address: str,
+def layercake_buildings_from_place(address: str,
                             columns: list[str] | None = None,
                             filters: str | None = None) -> GeoDataFrame:
     """
@@ -61,11 +68,18 @@ def osm_buildings_from_place(address: str,
     GeoDataFrame
         A GeoDataFrame containing OSM buildings data within specified place.
     """
-    return from_place(address, "", OSM_DATASETS["buildings"], None, 
-                    None, columns, filters)
+    gdf = from_place(address, "", LAYERCAKE_BASE_URL, None, 
+                    None, columns, filters,"buildings")
+    tags_df = json_normalize(gdf['tags'])
+    gdf = concat([
+        gdf.iloc[:, :2],           # First 2 columns
+        tags_df,                    # Unpacked tags
+        gdf.iloc[:, 2:].drop(columns=['tags'])  # Rest of columns (excluding tags)
+    ], axis=1)
+    return gdf
 
 
-def osm_buildings_from_bbox(bbox: tuple[float, float, float, float],
+def layercake_buildings_from_bbox(bbox: tuple[float, float, float, float],
                             columns: list[str] | None = None,
                             filters: str | None = None) -> GeoDataFrame:
     """
@@ -85,11 +99,18 @@ def osm_buildings_from_bbox(bbox: tuple[float, float, float, float],
     GeoDataFrame
         A GeoDataFrame containing OSM buildings data within the specified bounding box.
     """
-    return from_bbox(bbox, "", OSM_DATASETS["buildings"], None, 
-                    None, columns, filters)
+    gdf = from_bbox(bbox, "", LAYERCAKE_BASE_URL, None, 
+                    None, columns, filters,"buildings")
+    tags_df = json_normalize(gdf['tags'])
+    gdf = concat([
+        gdf.iloc[:, :2],           # First 2 columns
+        tags_df,                    # Unpacked tags
+        gdf.iloc[:, 2:].drop(columns=['tags'])  # Rest of columns (excluding tags)
+    ], axis=1)
+    return gdf
 
 
-def osm_highways_from_address(address: str | tuple[float, float],
+def layercake_highways_from_address(address: str | tuple[float, float],
                             columns: list[str] | None = None,
                             filters: str | None = None,
                             distance: float = 500,
@@ -116,11 +137,19 @@ def osm_highways_from_address(address: str | tuple[float, float],
     GeoDataFrame
         A GeoDataFrame containing OSM highways data within the specified bounding box.
     """
-    return from_address(address, "", OSM_DATASETS["highways"], None, 
-                    None, columns, filters, distance, unit)
+    gdf = from_address(address, "", LAYERCAKE_BASE_URL, None, 
+                    None, columns, filters, distance, unit,"highways")
+    tags_df = json_normalize(gdf['tags'])
+    gdf = concat([
+        gdf.iloc[:, :2],           # First 2 columns
+        tags_df,                    # Unpacked tags
+        gdf.iloc[:, 2:].drop(columns=['tags'])  # Rest of columns (excluding tags)
+    ], axis=1)
+    return gdf
+    
 
 
-def osm_highways_from_place(address: str,
+def layercake_highways_from_place(address: str,
                             columns: list[str] | None = None,
                             filters: str | None = None) -> GeoDataFrame:
     """
@@ -140,11 +169,18 @@ def osm_highways_from_place(address: str,
     GeoDataFrame
         A GeoDataFrame containing OSM highways data within specified place.
     """
-    return from_place(address, "", OSM_DATASETS["highways"], None, 
-                    None, columns, filters)
+    gdf = from_place(address, "", LAYERCAKE_BASE_URL, None, 
+                    None, columns, filters,"highways")
+    tags_df = json_normalize(gdf['tags'])
+    gdf = concat([
+        gdf.iloc[:, :2],           # First 2 columns
+        tags_df,                    # Unpacked tags
+        gdf.iloc[:, 2:].drop(columns=['tags'])  # Rest of columns (excluding tags)
+    ], axis=1)
+    return gdf
 
 
-def osm_highways_from_bbox(bbox: tuple[float, float, float, float],
+def layercake_highways_from_bbox(bbox: tuple[float, float, float, float],
                             columns: list[str] | None = None,
                             filters: str | None = None) -> GeoDataFrame:
     """
@@ -164,8 +200,15 @@ def osm_highways_from_bbox(bbox: tuple[float, float, float, float],
     GeoDataFrame
         A GeoDataFrame containing OSM highways data within the specified bounding box.
     """
-    return from_bbox(bbox, "", OSM_DATASETS["highways"], None, 
-                    None, columns, filters)
+    gdf = from_bbox(bbox, "", LAYERCAKE_BASE_URL, None, 
+                    None, columns, filters,"highways")
+    tags_df = json_normalize(gdf['tags'])
+    gdf = concat([
+        gdf.iloc[:, :2],           # First 2 columns
+        tags_df,                    # Unpacked tags
+        gdf.iloc[:, 2:].drop(columns=['tags'])  # Rest of columns (excluding tags)
+    ], axis=1)
+    return gdf
 
 
 def get_schema(dataset: str = "buildings") -> DataFrame:
@@ -187,20 +230,20 @@ def get_schema(dataset: str = "buildings") -> DataFrame:
     ValueError
         If the specified dataset is not valid.
     """
-    if dataset not in OSM_DATASETS:
-        raise ValueError(f"Invalid dataset: {dataset}. Must be one of {list(OSM_DATASETS.keys())}")
+    if dataset not in ["buildings","highways"]:
+        raise ValueError(f"Invalid dataset: {dataset}. Must be one of {["buildings","highways"]}")
     
-    path = OSM_DATASETS[dataset]
+    path = LAYERCAKE_BASE_URL + dataset
     schema = schema_from_dataset(path, None)
     return schema
 
 
 __all__ = [
-    "osm_buildings_from_address",
-    "osm_buildings_from_bbox", 
-    "osm_buildings_from_place",
-    "osm_highways_from_address",
-    "osm_highways_from_bbox",
-    "osm_highways_from_place",
+    "layercake_buildings_from_address",
+    "layercake_buildings_from_bbox", 
+    "layercake_buildings_from_place",
+    "layercake_highways_from_address",
+    "layercake_highways_from_bbox",
+    "layercake_highways_from_place",
     "get_schema"
 ]
