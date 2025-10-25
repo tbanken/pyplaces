@@ -9,7 +9,7 @@ import geopandas as gpd
 
 from ._geo_utils import geocode_place_to_bbox, geocode_point_to_bbox
 
-def schema_from_dataset(path,region,file: str | None = None):
+def schema_from_dataset(path,region,file_name: str | None = None):
     """
     Get schema from parquet dataset.
     
@@ -28,8 +28,8 @@ def schema_from_dataset(path,region,file: str | None = None):
     if region:
         conn.execute(f"SET s3_region='{region}';")
         conn.execute("SET s3_use_ssl=true;")
-    if file:
-        path = path + f"{file}.parquet"
+    if file_name:
+        path = path + f"{file_name}.parquet"
     else:
         path = path + '*.parquet'
     
@@ -44,7 +44,7 @@ def schema_from_dataset(path,region,file: str | None = None):
 def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float,float], 
                         columns: list[str] | None = None, 
                         filters: str | None = None,
-                        file: str | None = None) -> GeoDataFrame:
+                        file_name: str | None = None) -> GeoDataFrame:
     """
     Read geospatial data from a parquet file on S3 with filtering by bbox.
     
@@ -76,8 +76,8 @@ def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float
     if region:
         conn.execute(f"SET s3_region='{region}';")
         conn.execute("SET s3_use_ssl=true;")
-    if file:
-        path = path + f"{file}.parquet"
+    if file_name:
+        path = path + f"{file_name}.parquet"
     else:
         path = path + '*.parquet'
     
@@ -127,7 +127,7 @@ def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float
 def read_parquet_duckdb(path: str, region: str, 
                     columns: list[str] | None = None, 
                     filters: str | None = None,
-                    file: str | None = None) -> GeoDataFrame:
+                    file_name: str | None = None) -> GeoDataFrame:
     """
     Read tabular data from a parquet file on S3.
     
@@ -155,8 +155,8 @@ def read_parquet_duckdb(path: str, region: str,
     if region:
         conn.execute(f"SET s3_region='{region}';")
         conn.execute("SET s3_use_ssl=true;")
-    if file:
-        path = path + f"{file}.parquet"
+    if file_name:
+        path = path + f"{file_name}.parquet"
     else:
         path = path + '*.parquet'
     
@@ -181,15 +181,15 @@ def read_parquet_duckdb(path: str, region: str,
     
     return df
 
-def _get_gdf_from_bbox(release:str, bbox:tuple[float,float,float,float], columns:list[str], filters: str, prefix: str, path: str, region: str):
+def _get_gdf_from_bbox(release:str, bbox:tuple[float,float,float,float], columns:list[str], filters: str, prefix: str, path: str, region: str, file_name: str | None = None):
     """Helper function to get a geodataframe from a bounding box."""
     main_path = path.format(release=release) + prefix
-    gdf = read_geoparquet_duckdb(main_path, region, bbox, columns=columns, filters=filters)
+    gdf = read_geoparquet_duckdb(main_path, region, bbox, columns=columns, filters=filters,file_name=file_name)
     return gdf
 
 def from_address(address: str | tuple[float,float], prefix: str, main_path: str, region: str,
             release: str, columns: list[str]| None = None, filters: str | None = None,
-            distance: float = 500, unit: str = "m") -> GeoDataFrame:
+            distance: float = 500, unit: str = "m",  file_name: str | None = None) -> GeoDataFrame:
     """
     Wrapper to geocode an address and fetch the geoparquet data within the address's area.
     
@@ -220,11 +220,11 @@ def from_address(address: str | tuple[float,float], prefix: str, main_path: str,
         Filtered geodataframe
     """
     bbox = geocode_point_to_bbox(address, distance, unit)
-    gdf = from_bbox(bbox,prefix,main_path,region,release,columns,filters)
+    gdf = from_bbox(bbox,prefix,main_path,region,release,columns,filters,file_name)
     return gdf
     
 def from_place(address: str, prefix: str, main_path: str, region: str, release: str,
-            columns: list[str]| None=None, filters: str| None=None) -> GeoDataFrame:
+            columns: list[str]| None=None, filters: str| None=None,  file_name: str | None = None) -> GeoDataFrame:
     """
     Wrapper to geocode a place and fetch the geoparquet data within the place.
     
@@ -251,12 +251,12 @@ def from_place(address: str, prefix: str, main_path: str, region: str, release: 
         Filtered geodataframe
     """
     geometry, bbox = geocode_place_to_bbox(address)
-    gdf = from_bbox(bbox,prefix,main_path,region,release,columns,filters)
+    gdf = from_bbox(bbox,prefix,main_path,region,release,columns,filters,file_name)
     filtered_gdf = gdf[gdf.within(geometry)]
     return filtered_gdf
 
 def from_bbox(bbox: tuple[float,float,float,float], prefix: str, main_path: str, region: str, 
-            release: str, columns: list[str]| None=None, filters: str | None=None) -> GeoDataFrame:
+            release: str, columns: list[str]| None=None, filters: str | None=None,  file_name: str | None = None) -> GeoDataFrame:
     """
     Wrapper to fetch the geoparquet data within the bounding box.
     
@@ -282,5 +282,5 @@ def from_bbox(bbox: tuple[float,float,float,float], prefix: str, main_path: str,
     GeoDataFrame
         Filtered geodataframe
     """
-    gdf = _get_gdf_from_bbox(release, bbox, columns, filters, prefix, main_path, region)
+    gdf = _get_gdf_from_bbox(release, bbox, columns, filters, prefix, main_path, region,file_name)
     return gdf
