@@ -9,7 +9,7 @@ import geopandas as gpd
 
 from ._geo_utils import geocode_place_to_bbox, geocode_point_to_bbox
 
-def schema_from_dataset(s3_path,region):
+def schema_from_dataset(path,region,file: str | None = None):
     """
     Get schema from parquet dataset.
     
@@ -25,14 +25,17 @@ def schema_from_dataset(s3_path,region):
         DuckDB schema from given dataset.
     """
     conn = duckdb.connect()
-    conn.execute(f"SET s3_region='{region}';")
-    conn.execute("SET s3_use_ssl=true;")
-    
-    s3_path = s3_path + '*.parquet'
+    if region:
+        conn.execute(f"SET s3_region='{region}';")
+        conn.execute("SET s3_use_ssl=true;")
+    if file:
+        path = path + f"{file}.parquet"
+    else:
+        path = path + '*.parquet'
     
     schema_query = f"""
         DESCRIBE SELECT *
-        FROM '{s3_path}';
+        FROM '{path}';
         """
     df = conn.execute(schema_query).df().iloc[:,0:2]
     conn.close()
@@ -40,7 +43,8 @@ def schema_from_dataset(s3_path,region):
 
 def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float,float], 
                         columns: list[str] | None = None, 
-                        filters: str | None = None) -> GeoDataFrame:
+                        filters: str | None = None,
+                        file: str | None = None) -> GeoDataFrame:
     """
     Read geospatial data from a parquet file on S3 with filtering by bbox.
     
@@ -69,11 +73,15 @@ def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float
     conn.execute("LOAD spatial;")
     conn.execute("INSTALL httpfs;")
     conn.execute("LOAD httpfs;")
-    conn.execute(f"SET s3_region='{region}';")
-    conn.execute("SET s3_use_ssl=true;")
+    if region:
+        conn.execute(f"SET s3_region='{region}';")
+        conn.execute("SET s3_use_ssl=true;")
+    if file:
+        path = path + f"{file}.parquet"
+    else:
+        path = path + '*.parquet'
     
     xmin, ymin, xmax, ymax = bbox
-    path = path + '*.parquet'
     
     metadata_query = f"""
                     SELECT decode(key) as 'key', decode(value) as 'value'
@@ -118,7 +126,8 @@ def read_geoparquet_duckdb(path: str, region: str, bbox: tuple[float,float,float
 
 def read_parquet_duckdb(path: str, region: str, 
                     columns: list[str] | None = None, 
-                    filters: str | None = None) -> GeoDataFrame:
+                    filters: str | None = None,
+                    file: str | None = None) -> GeoDataFrame:
     """
     Read tabular data from a parquet file on S3.
     
@@ -143,10 +152,13 @@ def read_parquet_duckdb(path: str, region: str,
     # Install and load spatial extension for geometry handling
     conn.execute("INSTALL httpfs;")
     conn.execute("LOAD httpfs;")
-    conn.execute(f"SET s3_region='{region}';")
-    conn.execute("SET s3_use_ssl=true;")
-    
-    path = path + '*.parquet'
+    if region:
+        conn.execute(f"SET s3_region='{region}';")
+        conn.execute("SET s3_use_ssl=true;")
+    if file:
+        path = path + f"{file}.parquet"
+    else:
+        path = path + '*.parquet'
     
     # Select all if no selections, otherwise join selections together, exclude geometry column and cast it as text column
     column_select = "*" if columns is None else ", ".join(columns)
