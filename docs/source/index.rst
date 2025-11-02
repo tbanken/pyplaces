@@ -9,8 +9,8 @@ pyplaces |release| documentation
    pyplaces is still in development, so if you run into any bugs please report them `here <https://github.com/tbanken/pyplaces/issues/>`_.
 
 **Pyplaces** is a Python package that allows you to easily read places data from a known address, place, or just a bounding box. Currently, the two sources are
-Overture Maps and Foursquare Open Places. Overture Maps provides support to get data from multiple versions of the dataset for all of its themes. 
-Foursquare Open Places is primarily point of interest data which also supports fetching multiple versions of the dataset.
+Overture Maps and Foursquare Open Places, and Open Street Maps Layercake. Overture Maps provides support to get data from multiple versions of the dataset for its many themes. 
+Foursquare Open Places is primarily point of interest data which also supports fetching multiple versions of the dataset. OSM Layercake has buildings and highways data.
 
 **The available datasets are: Foursquare Places and Categories; Overture Places, Addresses, Transportation, Buildings, and Base layers.**
 
