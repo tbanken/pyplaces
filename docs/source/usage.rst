@@ -165,4 +165,12 @@ pyplaces.foursquare_open_places
 .. automodule:: pyplaces.foursquare_open_places
     :members:
 
+.. _pyplaces-open_street_maps_layercake-module:
+
+pyplaces.open_street_maps_layercake
+===============================
+
+.. automodule:: pyplaces.open_street_maps_layercake
+    :members:
+
 
