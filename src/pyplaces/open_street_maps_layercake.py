@@ -230,8 +230,9 @@ def get_schema(dataset: str = "buildings") -> DataFrame:
     ValueError
         If the specified dataset is not valid.
     """
-    if dataset not in ["buildings","highways"]:
-        raise ValueError(f"Invalid dataset: {dataset}. Must be one of {["buildings","highways"]}")
+    valid_datasets = ["buildings", "highways"]
+    if dataset not in valid_datasets:
+        raise ValueError(f"Invalid dataset: {dataset}. Must be one of {valid_datasets}")
     
     path = LAYERCAKE_BASE_URL + dataset
     schema = schema_from_dataset(path, None)
